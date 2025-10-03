@@ -7,11 +7,6 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!-- Centered logo -->
-
-    <!-- Optional loading percentage -->
-
-    <!-- Rounded Progress Bar -->
 
     <ImageView
         android:id="@+id/imgLogo"
