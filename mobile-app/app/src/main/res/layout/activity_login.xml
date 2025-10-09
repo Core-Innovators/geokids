@@ -79,7 +79,7 @@
             android:layout_height="50dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/rounded_white_card"
-            android:drawableStart="@android:drawable/ic_dialog_email"
+            android:drawableEnd="@android:drawable/ic_dialog_email"
             android:hint="Email"
             android:inputType="textEmailAddress"
             android:padding="12dp"
