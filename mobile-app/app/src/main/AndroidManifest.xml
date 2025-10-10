@@ -22,13 +22,13 @@
             android:exported="false" />
         <activity
             android:name=".role_select"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".signup"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".login"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

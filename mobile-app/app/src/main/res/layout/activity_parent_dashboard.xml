@@ -6,4 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".parent_dashboard">
 
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="perant"
+        android:textSize="34sp"
+        tools:layout_editor_absoluteX="120dp"
+        tools:layout_editor_absoluteY="150dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

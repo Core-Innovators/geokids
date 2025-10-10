@@ -41,15 +41,21 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
-    // Firebase BOM (keeps versions in sync)
-    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
+    // ✅ Firebase BOM (use this specific stable version)
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
-    // Firestore
+    // Firebase Authentication + Firestore
+    implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 
-    // Firebase Authentication
-    implementation("com.google.firebase:firebase-auth")
-
-    // (Optional) Google Sign-In support
+    // Optional Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // ✅ DataStore dependencies (required by Firestore since v26)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore:1.1.1")
+
+    // (Optional but recommended) Kotlin Coroutines if you use async Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }
+
