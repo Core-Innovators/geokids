@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".login"
+    android:background="#FFFFFF">
+
+    <!-- Logo -->
+
+    <!-- Orange Background Bottom -->
+
+    <!-- White Card -->
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="274dp"
+        android:layout_height="252dp"
+        android:layout_marginTop="4dp"
+        android:contentDescription="Logo"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/orange_bg"
+        android:layout_width="410dp"
+        android:layout_height="463dp"
+        android:background="@drawable/rounded_orange_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/card_container"
+        android:layout_width="386dp"
+        android:layout_height="383dp"
+        android:layout_margin="20dp"
+        android:background="@drawable/rounded_white_card"
+        android:elevation="6dp"
+        android:padding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.48"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.617">
+
+        <!-- Title -->
+
+        <!-- Email Field -->
+
+        <!-- Password Field -->
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="352dp"
+            android:layout_height="79dp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:text="Welcome Back!"
+            android:textColor="#0D2D4D"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/rounded_white_card"
+            android:drawableEnd="@android:drawable/ic_dialog_email"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title" />
+
+        <TextView
+            android:id="@+id/forgotPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Forgot Password?"
+            android:textColor="#ED5316"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/password" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/rounded_white_card"
+            android:drawableEnd="@android:drawable/ic_menu_view"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/email" />
+
+        <!-- Forgot Password -->
+
+        <!-- Login Button -->
+
+        <!-- Register Now -->
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#ED5316"
+            android:text="Login"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/forgotPassword" />
+
+        <TextView
+            android:id="@+id/register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No account yet? Register Now!"
+            android:textColor="#0D2D4D"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.503"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnLogin" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
