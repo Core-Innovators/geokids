@@ -15,6 +15,10 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAVWetO27IFFTzDxpCDVYc_vziRf-RTRBE"/>
+
         <activity
             android:name=".DriverFormActivity"
             android:exported="false" />
