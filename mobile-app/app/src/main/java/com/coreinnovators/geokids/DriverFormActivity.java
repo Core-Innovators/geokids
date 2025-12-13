@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -44,7 +45,6 @@ public class DriverFormActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.driverformactivity);
-
 
 
         // Initialize Firebase
@@ -215,14 +215,11 @@ public class DriverFormActivity extends AppCompatActivity {
                     Toast.makeText(this, "Driver registered successfully!",
                             Toast.LENGTH_SHORT).show();
 
-                    // Clear form
-                    clearForm();
-
-                    // Optional: Navigate to next activity
-                    // Intent intent = new Intent(DriverFormActivity.this, NextActivity.class);
-                    // intent.putExtra("driver_id", documentReference.getId());
-                    // startActivity(intent);
-                    // finish();
+                    // Navigate to NextFormActivity
+                    Intent intent = new Intent(DriverFormActivity.this, next_form.class);
+                    intent.putExtra("driver_id", documentReference.getId());
+                    startActivity(intent);
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);

@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
         android:allowBackup="true"
@@ -14,10 +18,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
+        <activity
+            android:name=".ChooseMapRouteDialog"
+            android:exported="false" />
+        <activity
+            android:name=".next_form"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAVWetO27IFFTzDxpCDVYc_vziRf-RTRBE"/>
+            android:value="AIzaSyA7gzSifsS-B5CyokjNZLb0Jq8wGeclU-A" />
 
         <activity
             android:name=".DriverFormActivity"
