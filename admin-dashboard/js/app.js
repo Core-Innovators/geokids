@@ -137,70 +137,131 @@ document.head.appendChild(style);
 
 
 function initializeButtons() {
-    // Approve buttons
-    const approveButtons = document.querySelectorAll('.btn-approve');
-    approveButtons.forEach(btn => {
-        btn.addEventListener('click', handleApprove);
+    // View Application buttons (for pending drivers)
+    const viewAppButtons = document.querySelectorAll('.btn-view-application');
+    viewAppButtons.forEach(btn => {
+        btn.addEventListener('click', handleViewApplication);
     });
 
-    // Reject buttons
-    const rejectButtons = document.querySelectorAll('.btn-reject');
-    rejectButtons.forEach(btn => {
-        btn.addEventListener('click', handleReject);
-    });
-
-    // View details buttons
+    // View details buttons (for active drivers)
     const viewButtons = document.querySelectorAll('.btn-view-details');
     viewButtons.forEach(btn => {
         btn.addEventListener('click', handleViewDetails);
     });
 }
 
-function handleApprove(e) {
+async function handleApprove(e) {
     const row = e.target.closest('tr');
+    const driverId = row.getAttribute('data-driver-id');
     const driverName = row.cells[0].textContent;
-    const phone = row.cells[1].textContent;
-    const vehicleType = row.cells[2].textContent;
-    const license = row.cells[3].textContent;
 
     if (confirm(`Approve driver registration for ${driverName}?`)) {
-        const driverData = {
-            name: driverName,
-            phone: phone,
-            vehicle: vehicleType,
-            license: license,
-            status: 'active'
-        };
+        try {
+            // Show loading
+            showNotification('Processing approval...', 'info');
 
-        row.style.transition = 'all 0.3s ease-out';
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(100px)';
+            // Update Firebase status to approved
+            await window.FirebaseService.approveDriver(driverId);
 
-        setTimeout(() => {
-            row.remove();
-            addDriverToActiveList(driverData);
-            showNotification(`✅ ${driverName} approved and moved to active!`, 'success');
-            updatePendingBadge();
-        }, 300);
+            // Fetch the updated driver details
+            const driver = await window.FirebaseService.getDriverById(driverId);
+
+            // Animate out from pending table
+            row.style.transition = 'all 0.3s ease-out';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(100px)';
+
+            setTimeout(() => {
+                row.remove();
+
+                // Add to active drivers grid
+                window.DriverManagement.addDriverToActiveList(driver);
+
+                showNotification(`✅ ${driverName} approved and moved to active drivers!`, 'success');
+                updatePendingBadge();
+            }, 300);
+        } catch (error) {
+            console.error('Error approving driver:', error);
+            showNotification('Failed to approve driver. Please try again.', 'error');
+        }
     }
 }
 
 function handleReject(e) {
     const row = e.target.closest('tr');
+    const driverId = row.getAttribute('data-driver-id');
     const driverName = row.cells[0].textContent;
 
-    if (confirm(`Reject driver registration for ${driverName}?`)) {
-        // Animate row out
-        row.style.transition = 'all 0.3s ease-out';
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-100px)';
+    // Show rejection reason modal
+    showRejectionReasonModal(driverId, driverName, row);
+}
 
-        setTimeout(() => {
-            row.remove();
-            showNotification(`❌ ${driverName} has been rejected.`, 'error');
-            updatePendingBadge();
-        }, 300);
-    }
+// Show modal to get rejection reason
+function showRejectionReasonModal(driverId, driverName, row) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('rejection-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'rejection-modal';
+    modal.className = 'driver-modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content-medium">
+            <div class="modal-header-orange">
+                <h2><i class="fas fa-times-circle"></i> Reject Application</h2>
+                <button class="modal-close-btn" onclick="this.closest('.driver-modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: #64748B;">Why are you rejecting <strong>${driverName}</strong>'s application?</p>
+                <textarea id="rejection-reason" 
+                          placeholder="Enter rejection reason (required)" 
+                          style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: 0.5rem; font-family: inherit; resize: vertical;"
+                          required></textarea>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn-modal btn-cancel" onclick="this.closest('.driver-modal-overlay').remove()" style="flex: 1; background: #64748B; color: white; padding: 0.75rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button class="btn-modal btn-submit-reject" style="flex: 1; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; padding: 0.75rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-ban"></i> Submit Rejection
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Handle submit
+    modal.querySelector('.btn-submit-reject').addEventListener('click', async () => {
+        const reason = document.getElementById('rejection-reason').value.trim();
+
+        if (!reason) {
+            alert('Please enter a rejection reason');
+            return;
+        }
+
+        try {
+            modal.remove();
+            showNotification('Processing rejection...', 'info');
+
+            // Update Firebase
+            await window.FirebaseService.rejectDriver(driverId, reason);
+
+            // Animate row out
+            row.style.transition = 'all 0.3s ease-out';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-100px)';
+
+            setTimeout(() => {
+                row.remove();
+                showNotification(`❌ ${driverName}'s application has been rejected.`, 'warning');
+                updatePendingBadge();
+            }, 300);
+        } catch (error) {
+            console.error('Error rejecting driver:', error);
+            showNotification('Failed to reject driver. Please try again.', 'error');
+        }
+    });
 }
 
 function handleViewDetails(e) {
@@ -232,14 +293,16 @@ function handleViewDetails(e) {
         showParentDetailsModal(parentData);
     } else if (card) {
         console.log('✅ DETECTED AS DRIVER CARD');
-        // This is a driver card
+        // This is a driver card - extract driver ID
+        const driverId = card.getAttribute('data-driver-id');
         const driverData = {
-            name: card.querySelector('h4').textContent,
-            vehicle: card.querySelector('.driver-vehicle').textContent,
-            status: card.querySelector('.driver-status').textContent,
-            phone: card.getAttribute('data-driver-phone'),
-            license: card.getAttribute('data-driver-license')
+            id: driverId, // Pass the Firebase document ID
+            name: card.querySelector('h4')?.textContent,
+            vehicle: card.querySelector('.driver-vehicle')?.textContent,
+            status: card.querySelector('.driver-status')?.textContent,
+            phone: card.getAttribute('data-driver-phone')
         };
+        console.log('Driver data with ID:', driverData);
         showDriverDetailsModal(driverData);
     } else if (row) {
         console.log('✅ DETECTED AS DRIVER ROW (fallback)');
@@ -278,14 +341,15 @@ function handleSignOut() {
 function updatePendingBadge() {
     const badge = document.querySelector('.badge');
     const table = document.getElementById('pending-drivers-table');
-    const rowCount = table ? table.rows.length : 0;
+    // Count only rows with data-driver-id (actual driver rows, not the "no pending" message)
+    const rowCount = table ? table.querySelectorAll('tr[data-driver-id]').length : 0;
 
     if (badge) {
         badge.textContent = `${rowCount} Pending`;
 
         if (rowCount === 0) {
             badge.style.background = '#10B981';
-            badge.textContent = 'All Clear ✓';
+            badge.textContent = '0 Pending';
         }
     }
 }
@@ -356,14 +420,83 @@ notificationStyle.textContent = `
 document.head.appendChild(notificationStyle);
 
 
-function loadMockData() {
-    // This would come from Firebase in production
-    console.log('📊 Loading mock data...');
+async function loadMockData() {
+    console.log('📊 Loading driver data from Firebase...');
 
-    // Simulate data loading
-    setTimeout(() => {
-        console.log('✅ Mock data loaded successfully');
-    }, 500);
+    try {
+        // Load pending and active drivers from Firebase
+        const [pendingDrivers, activeDrivers] = await Promise.all([
+            window.FirebaseService.getPendingDrivers(),
+            window.FirebaseService.getActiveDrivers()
+        ]);
+
+        console.log(`✅ Loaded ${pendingDrivers.length} pending and ${activeDrivers.length} active drivers`);
+
+        // Populate pending drivers table
+        const pendingTable = document.getElementById('pending-drivers-table');
+        if (pendingTable && pendingDrivers.length > 0) {
+            pendingTable.innerHTML = '';
+
+            pendingDrivers.forEach(driver => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-driver-id', driver.id);
+
+                // Format time ago
+                const createdDate = new Date(driver.createdAt);
+                const timeAgo = getTimeAgo(createdDate);
+
+                row.innerHTML = `
+                    <td>${driver.fullName || 'N/A'}</td>
+                    <td>${driver.contactNumber || 'N/A'}</td>
+                    <td>${driver.address || 'N/A'}</td>
+                    <td>${driver.nic || 'N/A'}</td>
+                    <td>${timeAgo}</td>
+                    <td>
+                        <button class="btn-view-application">View Application</button>
+                    </td>
+                `;
+
+                pendingTable.appendChild(row);
+            });
+
+            // Re-initialize button handlers
+            initializeButtons();
+            updatePendingBadge();
+        } else if (pendingTable) {
+            pendingTable.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;">No pending driver applications</td></tr>';
+            updatePendingBadge();
+        }
+
+        // Populate the active drivers grid
+        const driversGrid = document.querySelector('.drivers-grid');
+        if (driversGrid) {
+            driversGrid.innerHTML = '';
+
+            if (activeDrivers.length > 0) {
+                activeDrivers.forEach(driver => {
+                    window.DriverManagement.addDriverToActiveList(driver);
+                });
+            } else {
+                driversGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94A3B8;">No active drivers yet</p>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error loading drivers from Firebase:', error);
+        showNotification('Failed to load drivers. Please check console.', 'error');
+    }
+}
+
+// Helper function to calculate time ago
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 }
 
 
