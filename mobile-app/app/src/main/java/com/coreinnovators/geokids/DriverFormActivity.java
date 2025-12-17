@@ -18,6 +18,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+<<<<<<< HEAD
+=======
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
@@ -34,6 +39,11 @@ public class DriverFormActivity extends AppCompatActivity {
 
     // Firebase
     private FirebaseFirestore firestore;
+<<<<<<< HEAD
+=======
+    private FirebaseAuth auth;
+    private String currentUserId;
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 
     // Selected Image
     private Uri selectedImageUri;
@@ -46,9 +56,25 @@ public class DriverFormActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.driverformactivity);
 
+<<<<<<< HEAD
 
         // Initialize Firebase
         firestore = FirebaseFirestore.getInstance();
+=======
+        // Initialize Firebase
+        firestore = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
+        // Get current user ID
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        currentUserId = currentUser.getUid();
+        Log.d(TAG, "Current user ID: " + currentUserId);
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 
         // Initialize Views
         initializeViews();
@@ -203,6 +229,7 @@ public class DriverFormActivity extends AppCompatActivity {
 
     private void saveToFirestore(String name, String address, String nic,
                                  String birthday, String contact, String imageUrl) {
+<<<<<<< HEAD
         // Create driver object
         Driver driver = new Driver(name, address, nic, birthday, contact, imageUrl);
 
@@ -218,6 +245,27 @@ public class DriverFormActivity extends AppCompatActivity {
                     // Navigate to NextFormActivity
                     Intent intent = new Intent(DriverFormActivity.this, next_form.class);
                     intent.putExtra("driver_id", documentReference.getId());
+=======
+        // Create driver object with user ID
+        Driver driver = new Driver(name, address, nic, birthday, contact, imageUrl);
+
+        Log.d(TAG, "Saving driver data with ID: " + currentUserId);
+
+        // Use SET with user ID as document ID instead of ADD
+        firestore.collection(COLLECTION_NAME)
+                .document(currentUserId)  // Use user ID as document ID
+                .set(driver.toMap())
+                .addOnSuccessListener(aVoid -> {
+                    showLoading(false);
+                    Log.d(TAG, "Driver data saved with ID: " + currentUserId);
+                    Toast.makeText(this, "Driver registered successfully!",
+                            Toast.LENGTH_SHORT).show();
+
+                    // Navigate to NextFormActivity with user ID
+                    Intent intent = new Intent(DriverFormActivity.this, next_form.class);
+                    intent.putExtra("driver_id", currentUserId);
+                    intent.putExtra("driver_name", name);
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
                     startActivity(intent);
                     finish();
                 })
