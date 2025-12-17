@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoKids Admin Dashboard</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="GeoKids Admin Dashboard - Manage school transport, drivers, children, and parents with ease">
+    <meta name="keywords" content="geokids, admin, dashboard, school transport, driver management">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Logo Section -->
+            <div class="sidebar-logo">
+                <img src="assets/logo.png" alt="GeoKids Logo" class="logo-img">
+
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="drivers" id="nav-drivers">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Drivers</span>
+                </a>
+                <a href="#" class="nav-item" data-page="parents" id="nav-parents">
+                    <i class="fas fa-users"></i>
+                    <span>Parent & Child</span>
+                </a>
+                <a href="#" class="nav-item" data-page="trips" id="nav-trips">
+                    <i class="fas fa-route"></i>
+                    <span>Trips</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports" id="nav-reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Report</span>
+                </a>
+                <a href="#" class="nav-item signout-btn" id="nav-signout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>SignOut</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content">
+            <!-- Dashboard Page -->
+            <div class="page-content active" id="page-dashboard">
+                <div class="dashboard-grid">
+                    <!-- Drivers Card -->
+                    <div class="dashboard-card" data-navigate="drivers">
+                        <div class="card-image">
+                            <img src="assets/driver.png" alt="Drivers Management">
+                        </div>
+                        <div class="card-overlay">
+                            <h3>Manage Drivers</h3>
+                            <p>View and approve driver registrations</p>
+                        </div>
+                    </div>
+
+                    <!-- Parents & Children Card -->
+                    <div class="dashboard-card" data-navigate="parents">
+                        <div class="card-image">
+                            <img src="assets/Parent.png" alt="Parents & Children">
+                        </div>
+                        <div class="card-overlay">
+                            <h3>Parents & Children</h3>
+                            <p>Manage parent and child accounts</p>
+                        </div>
+                    </div>
+
+                    <!-- Trips/Routes Card -->
+                    <div class="dashboard-card" data-navigate="trips">
+                        <div class="card-image">
+                            <img src="assets/Trip.png" alt="Trips & Routes">
+                        </div>
+                        <div class="card-overlay">
+                            <h3>Track Trips</h3>
+                            <p>Monitor active trips and routes</p>
+                        </div>
+                    </div>
+
+                    <!-- Announcements Card -->
+                    <div class="dashboard-card" data-navigate="reports">
+                        <div class="card-image">
+                            <img src="assets/Alert.png" alt="Announcements">
+                        </div>
+                        <div class="card-overlay">
+                            <h3>Reports & Analytics</h3>
+                            <p>View statistics and reports</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drivers Page -->
+            <div class="page-content" id="page-drivers">
+                <div class="page-header">
+                    <h2>Driver Management</h2>
+                    <p>Manage driver registrations and approvals</p>
+                </div>
+
+                <!-- Pending Requests Section -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Pending Registration Requests</h3>
+                        <span class="badge">3 Pending</span>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Vehicle Type</th>
+                                    <th>License Number</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-drivers-table">
+                                <tr>
+                                    <td>Saman Kumara</td>
+                                    <td>+94 77 123 4567</td>
+                                    <td>Van</td>
+                                    <td>DL-1234567</td>
+                                    <td>2 hours ago</td>
+                                    <td>
+                                        <button class="btn-approve">Approve</button>
+                                        <button class="btn-reject">Reject</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Amila Sampath</td>
+                                    <td>+94 76 987 6543</td>
+                                    <td>Bus</td>
+                                    <td>DL-7654321</td>
+                                    <td>5 hours ago</td>
+                                    <td>
+                                        <button class="btn-approve">Approve</button>
+                                        <button class="btn-reject">Reject</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Kithsiri Rathnayaka</td>
+                                    <td>+94 75 555 1234</td>
+                                    <td>Car</td>
+                                    <td>DL-5551234</td>
+                                    <td>1 day ago</td>
+                                    <td>
+                                        <button class="btn-approve">Approve</button>
+                                        <button class="btn-reject">Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Active Drivers Section -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Active Drivers</h3>
+                        <input type="search" class="search-input" placeholder="Search drivers...">
+                    </div>
+
+                    <div class="drivers-grid">
+                        <div class="driver-card">
+                            <div class="driver-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <h4>Chandana Bandara</h4>
+                            <p class="driver-vehicle">Toyota Hiace Van</p>
+                            <p class="driver-status active">Active</p>
+                            <button class="btn-view-details">View Details</button>
+                        </div>
+
+                        <div class="driver-card">
+                            <div class="driver-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <h4>Jagath Lakshman</h4>
+                            <p class="driver-vehicle">School Bus</p>
+                            <p class="driver-status active">Active</p>
+                            <button class="btn-view-details">View Details</button>
+                        </div>
+
+                        <div class="driver-card">
+                            <div class="driver-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <h4>Dasun Shanaka</h4>
+                            <p class="driver-vehicle">School Bus</p>
+                            <p class="driver-status inactive">Offline</p>
+                            <button class="btn-view-details">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parents & Children Page -->
+            <div class="page-content" id="page-parents">
+                <div class="page-header">
+                    <h2>Parents & Children Management</h2>
+                    <p>Manage parent and child accounts</p>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Registered Parents</h3>
+                        <input type="search" class="search-input" placeholder="Search parents...">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Parent Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Children</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <td>+94 75 456 7890</td>
+                            <td>Nishanthi@email.com</td>
+                            <td>3 Children</td>
+                            <td>Dec 28, 2024</td>
+                            <td>
+                                <button class="btn-view-details">View</button>
+                            </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trips Page -->
+            <div class="page-content" id="page-trips">
+                <div class="page-header">
+                    <h2>Trip Management</h2>
+                    <p>Monitor and manage all trips</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon active-trips">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Active Trips</h4>
+                            <p class="stat-number">12</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon completed-trips">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Completed Today</h4>
+                            <p class="stat-number">45</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon total-distance">
+                            <i class="fas fa-road"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Total Distance</h4>
+                            <p class="stat-number">324 km</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Active Trips</h3>
+                    </div>
+
+                    <div class="trips-list">
+                        <div class="trip-item">
+                            <div class="trip-info">
+                                <h4>Morning Pickup - Route A</h4>
+                                <p>Driver: Robert Brown</p>
+                                <p>Students: 8/12</p>
+                            </div>
+                            <div class="trip-status">
+                                <span class="status-badge in-progress">In Progress</span>
+                                <p class="trip-time">Started 25 min ago</p>
+                            </div>
+                        </div>
+
+                        <div class="trip-item">
+                            <div class="trip-info">
+                                <h4>Morning Pickup - Route B</h4>
+                                <p>Driver: James Wilson</p>
+                                <p>Students: 15/18</p>
+                            </div>
+                            <div class="trip-status">
+                                <span class="status-badge in-progress">In Progress</span>
+                                <p class="trip-time">Started 18 min ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div class="page-content" id="page-reports">
+                <div class="page-header">
+                    <h2>Reports & Analytics</h2>
+                    <p>View comprehensive statistics and reports</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon drivers-stat">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Total Drivers</h4>
+                            <p class="stat-number">24</p>
+                            <p class="stat-change positive">+3 this month</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon parents-stat">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Total Parents</h4>
+                            <p class="stat-number">156</p>
+                            <p class="stat-change positive">+12 this month</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon children-stat">
+                            <i class="fas fa-child"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Total Children</h4>
+                            <p class="stat-number">243</p>
+                            <p class="stat-change positive">+18 this month</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon trips-stat">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>Total Trips</h4>
+                            <p class="stat-number">1,234</p>
+                            <p class="stat-change positive">+89 this week</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Monthly Overview</h3>
+                        <div class="date-filter">
+                            <input type="month" value="2025-01" class="date-input">
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="report-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <div>
+                                <h4>Working Days</h4>
+                                <p>22 days</p>
+                            </div>
+                        </div>
+
+                        <div class="report-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h4>Average Trip Duration</h4>
+                                <p>45 minutes</p>
+                            </div>
+                        </div>
+
+                        <div class="report-item">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <h4>Average Rating</h4>
+                                <p>4.8 / 5.0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/driver-management.js"></script>
+    <script src="js/parent-management.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
+```
