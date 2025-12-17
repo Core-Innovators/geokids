@@ -3,10 +3,7 @@ package com.coreinnovators.geokids;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-<<<<<<< HEAD
-=======
 import android.util.Log;
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,19 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-<<<<<<< HEAD
-=======
 import com.google.firebase.firestore.DocumentSnapshot;
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class login extends AppCompatActivity {
 
-<<<<<<< HEAD
-=======
     private static final String TAG = "LoginActivity";
 
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     private EditText emailEt, passwordEt;
     private Button loginBtn;
     private TextView registerTv;
@@ -62,41 +53,15 @@ public class login extends AppCompatActivity {
             return;
         }
 
-<<<<<<< HEAD
-=======
         // Disable login button during authentication
         loginBtn.setEnabled(false);
         loginBtn.setText("Logging in...");
 
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
-<<<<<<< HEAD
-                            db.collection("users").document(user.getUid())
-                                    .get()
-                                    .addOnSuccessListener(doc -> {
-                                        if (doc.exists()) {
-                                            String role = doc.getString("role");
-                                            if ("Parent".equals(role)) {
-                                                startActivity(new Intent(login.this, parent_dashboard.class));
-                                            } else if ("Driver".equals(role)) {
-                                                startActivity(new Intent(login.this, driver_dashboard.class));
-                                            } else {
-                                                Toast.makeText(this, "Role not assigned", Toast.LENGTH_SHORT).show();
-                                            }
-                                            finish();
-                                        }
-                                    });
-                        }
-                    } else {
-                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-=======
                             checkUserRoleAndNavigate(user.getUid());
                         }
                     } else {
@@ -239,5 +204,4 @@ public class login extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 }
