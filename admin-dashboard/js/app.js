@@ -137,6 +137,7 @@ document.head.appendChild(style);
 
 
 function initializeButtons() {
+<<<<<<< HEAD
     // View Application buttons (for pending drivers)
     const viewAppButtons = document.querySelectorAll('.btn-view-application');
     viewAppButtons.forEach(btn => {
@@ -144,12 +145,28 @@ function initializeButtons() {
     });
 
     // View details buttons (for active drivers)
+=======
+    // Approve buttons
+    const approveButtons = document.querySelectorAll('.btn-approve');
+    approveButtons.forEach(btn => {
+        btn.addEventListener('click', handleApprove);
+    });
+
+    // Reject buttons
+    const rejectButtons = document.querySelectorAll('.btn-reject');
+    rejectButtons.forEach(btn => {
+        btn.addEventListener('click', handleReject);
+    });
+
+    // View details buttons
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     const viewButtons = document.querySelectorAll('.btn-view-details');
     viewButtons.forEach(btn => {
         btn.addEventListener('click', handleViewDetails);
     });
 }
 
+<<<<<<< HEAD
 async function handleApprove(e) {
     const row = e.target.closest('tr');
     const driverId = row.getAttribute('data-driver-id');
@@ -184,11 +201,40 @@ async function handleApprove(e) {
             console.error('Error approving driver:', error);
             showNotification('Failed to approve driver. Please try again.', 'error');
         }
+=======
+function handleApprove(e) {
+    const row = e.target.closest('tr');
+    const driverName = row.cells[0].textContent;
+    const phone = row.cells[1].textContent;
+    const vehicleType = row.cells[2].textContent;
+    const license = row.cells[3].textContent;
+
+    if (confirm(`Approve driver registration for ${driverName}?`)) {
+        const driverData = {
+            name: driverName,
+            phone: phone,
+            vehicle: vehicleType,
+            license: license,
+            status: 'active'
+        };
+
+        row.style.transition = 'all 0.3s ease-out';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(100px)';
+
+        setTimeout(() => {
+            row.remove();
+            addDriverToActiveList(driverData);
+            showNotification(`✅ ${driverName} approved and moved to active!`, 'success');
+            updatePendingBadge();
+        }, 300);
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     }
 }
 
 function handleReject(e) {
     const row = e.target.closest('tr');
+<<<<<<< HEAD
     const driverId = row.getAttribute('data-driver-id');
     const driverName = row.cells[0].textContent;
 
@@ -262,6 +308,22 @@ function showRejectionReasonModal(driverId, driverName, row) {
             showNotification('Failed to reject driver. Please try again.', 'error');
         }
     });
+=======
+    const driverName = row.cells[0].textContent;
+
+    if (confirm(`Reject driver registration for ${driverName}?`)) {
+        // Animate row out
+        row.style.transition = 'all 0.3s ease-out';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-100px)';
+
+        setTimeout(() => {
+            row.remove();
+            showNotification(`❌ ${driverName} has been rejected.`, 'error');
+            updatePendingBadge();
+        }, 300);
+    }
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 }
 
 function handleViewDetails(e) {
@@ -293,6 +355,7 @@ function handleViewDetails(e) {
         showParentDetailsModal(parentData);
     } else if (card) {
         console.log('✅ DETECTED AS DRIVER CARD');
+<<<<<<< HEAD
         // This is a driver card - extract driver ID
         const driverId = card.getAttribute('data-driver-id');
         const driverData = {
@@ -303,6 +366,16 @@ function handleViewDetails(e) {
             phone: card.getAttribute('data-driver-phone')
         };
         console.log('Driver data with ID:', driverData);
+=======
+        // This is a driver card
+        const driverData = {
+            name: card.querySelector('h4').textContent,
+            vehicle: card.querySelector('.driver-vehicle').textContent,
+            status: card.querySelector('.driver-status').textContent,
+            phone: card.getAttribute('data-driver-phone'),
+            license: card.getAttribute('data-driver-license')
+        };
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
         showDriverDetailsModal(driverData);
     } else if (row) {
         console.log('✅ DETECTED AS DRIVER ROW (fallback)');
@@ -341,15 +414,23 @@ function handleSignOut() {
 function updatePendingBadge() {
     const badge = document.querySelector('.badge');
     const table = document.getElementById('pending-drivers-table');
+<<<<<<< HEAD
     // Count only rows with data-driver-id (actual driver rows, not the "no pending" message)
     const rowCount = table ? table.querySelectorAll('tr[data-driver-id]').length : 0;
+=======
+    const rowCount = table ? table.rows.length : 0;
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 
     if (badge) {
         badge.textContent = `${rowCount} Pending`;
 
         if (rowCount === 0) {
             badge.style.background = '#10B981';
+<<<<<<< HEAD
             badge.textContent = '0 Pending';
+=======
+            badge.textContent = 'All Clear ✓';
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
         }
     }
 }
@@ -420,6 +501,7 @@ notificationStyle.textContent = `
 document.head.appendChild(notificationStyle);
 
 
+<<<<<<< HEAD
 async function loadMockData() {
     console.log('📊 Loading driver data from Firebase...');
 
@@ -497,6 +579,16 @@ function getTimeAgo(date) {
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+=======
+function loadMockData() {
+    // This would come from Firebase in production
+    console.log('📊 Loading mock data...');
+
+    // Simulate data loading
+    setTimeout(() => {
+        console.log('✅ Mock data loaded successfully');
+    }, 500);
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 }
 
 

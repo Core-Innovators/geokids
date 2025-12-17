@@ -13,10 +13,17 @@ const firebaseConfig = {
     appId: "1:79781307479:web:a52cbea847c8d4f3b1ef12"
 };
 
+<<<<<<< HEAD
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+=======
+// Initialize Firebase (commented out until config is added)
+// firebase.initializeApp(firebaseConfig);
+// const db = firebase.firestore();
+// const auth = firebase.auth();
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 
 // ===================================
 // Firebase Helper Functions
@@ -47,18 +54,30 @@ async function signOutUser() {
 // Firestore Operations for Drivers
 async function getPendingDrivers() {
     try {
+<<<<<<< HEAD
         const snapshot = await db.collection('drivers')
             .where('status', '==', 'pending')
             .get();
         // Sort by createdAt client-side to avoid composite index requirement
         const drivers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return drivers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+=======
+        // const snapshot = await db.collection('drivers')
+        //     .where('status', '==', 'pending')
+        //     .orderBy('createdAt', 'desc')
+        //     .get();
+        // return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log('Get pending drivers - waiting for Firebase config');
+        return [];
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     } catch (error) {
         console.error('Error getting pending drivers:', error);
         throw error;
     }
 }
 
+<<<<<<< HEAD
 // Get all drivers
 async function getAllDrivers() {
     try {
@@ -109,12 +128,23 @@ async function approveDriver(driverId) {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         console.log('Driver approved:', driverId);
+=======
+async function approveDriver(driverId) {
+    try {
+        // await db.collection('drivers').doc(driverId).update({
+        //     status: 'approved',
+        //     approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        // });
+
+        console.log('Approve driver - waiting for Firebase config');
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     } catch (error) {
         console.error('Error approving driver:', error);
         throw error;
     }
 }
 
+<<<<<<< HEAD
 async function rejectDriver(driverId, rejectionReason) {
     try {
         await db.collection('drivers').doc(driverId).update({
@@ -124,14 +154,27 @@ async function rejectDriver(driverId, rejectionReason) {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         console.log('Driver rejected:', driverId);
+=======
+async function rejectDriver(driverId) {
+    try {
+        // await db.collection('drivers').doc(driverId).update({
+        //     status: 'rejected',
+        //     rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+        // });
+
+        console.log('Reject driver - waiting for Firebase config');
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     } catch (error) {
         console.error('Error rejecting driver:', error);
         throw error;
     }
 }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 // Firestore Operations for Parents & Children
 async function getParents() {
     try {
@@ -257,9 +300,12 @@ window.FirebaseService = {
     signInUser,
     signOutUser,
     getPendingDrivers,
+<<<<<<< HEAD
     getAllDrivers,
     getActiveDrivers,
     getDriverById,
+=======
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     approveDriver,
     rejectDriver,
     getParents,
@@ -271,5 +317,10 @@ window.FirebaseService = {
     getDashboardStats
 };
 
+<<<<<<< HEAD
 console.log('📱 Firebase service initialized successfully');
 console.log('✅ Connected to Firebase project:', firebaseConfig.projectId);
+=======
+console.log('📱 Firebase service initialized (configuration pending)');
+console.log('ℹ️ To connect to Firebase, update the firebaseConfig object in js/firebase-config.js');
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))

@@ -19,6 +19,18 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
         <activity
+<<<<<<< HEAD
+=======
+            android:name=".driver_rejection_screen"
+            android:exported="false" />
+        <activity
+            android:name=".driver_active_dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".driver_pending_dashboard"
+            android:exported="false" />
+        <activity
+>>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
             android:name=".ChooseMapRouteDialog"
             android:exported="false" />
         <activity
