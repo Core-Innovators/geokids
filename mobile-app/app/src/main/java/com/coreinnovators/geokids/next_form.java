@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -400,34 +401,6 @@ public class next_form extends AppCompatActivity {
             return;
         }
 
-<<<<<<< HEAD
-        // Create update map
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("frontLicenseUrl", frontLicenseUrl);
-        updates.put("backLicenseUrl", backLicenseUrl);
-        updates.put("vehicleImageUrls", vehicleImageUrls);
-        updates.put("routeData", selectedRouteData.toMap());  // Store complete route with coordinates
-        updates.put("updatedAt", System.currentTimeMillis());
-
-        Log.d(TAG, "Updating Firestore for driver: " + driverId);
-
-        // Update Firestore document
-        firestore.collection(COLLECTION_NAME)
-                .document(driverId)
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    showLoading(false);
-                    Log.d(TAG, "Driver data updated successfully!");
-                    Toast.makeText(this, "Registration completed successfully!",
-                            Toast.LENGTH_SHORT).show();
-
-                    // Navigate to success screen or home
-                    finish();
-                    // Or navigate to another activity:
-                    // Intent intent = new Intent(next_form.this, HomeActivity.class);
-                    // startActivity(intent);
-                    // finish();
-=======
         // Create complete driver data map
         Map<String, Object> driverData = new HashMap<>();
         driverData.put("frontLicenseUrl", frontLicenseUrl);
@@ -444,7 +417,7 @@ public class next_form extends AppCompatActivity {
         // Use SET with merge to update existing document
         firestore.collection(COLLECTION_NAME)
                 .document(driverId)
-                .set(driverData, com.google.firebase.firestore.SetOptions.merge())
+                .set(driverData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     showLoading(false);
                     Log.d(TAG, "Driver data updated successfully!");
@@ -463,15 +436,11 @@ public class next_form extends AppCompatActivity {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);
                     Log.e(TAG, "Error updating driver data: " + e.getMessage());
-<<<<<<< HEAD
-=======
                     e.printStackTrace();
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
                     Toast.makeText(this, "Failed to save data: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
                 });
