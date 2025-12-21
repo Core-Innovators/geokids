@@ -3,6 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+<<<<<<< HEAD
+=======
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+>>>>>>> 5670744 (Parent functions)
 
     <application
         android:allowBackup="true"
@@ -15,6 +22,32 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
         <activity
+<<<<<<< HEAD
+=======
+            android:name=".driver_rejection_screen"
+            android:exported="false" />
+        <activity
+            android:name=".driver_active_dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".driver_pending_dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".ChooseMapRouteDialog"
+            android:exported="false" />
+        <activity
+            android:name=".next_form"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA7gzSifsS-B5CyokjNZLb0Jq8wGeclU-A" />
+
+        <activity
+            android:name=".DriverFormActivity"
+            android:exported="false" />
+        <activity
+>>>>>>> 5670744 (Parent functions)
             android:name=".driver_dashboard"
             android:exported="false" />
         <activity
@@ -40,4 +73,8 @@
         </activity>
     </application>
 
+<<<<<<< HEAD
 </manifest>
+=======
+</manifest>
+>>>>>>> 5670744 (Parent functions)

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Red border as shown in the "Delete Account" button [1] -->
+    <!-- You can use #FF0000 or the brand colour #ED5316 mentioned previously -->
+    <stroke
+        android:width="2dp"
+        android:color="#FF0000" />
+
+    <!-- Rounded corners to create the pill shape [1] -->
+    <corners android:radius="30dp" />
+
+    <!-- Solid white background inside the button [1] -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Padding ensures the text doesn't touch the borders -->
+    <padding
+        android:left="20dp"
+        android:right="20dp"
+        android:top="12dp"
+        android:bottom="12dp" />
+</shape>

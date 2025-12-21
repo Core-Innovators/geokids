@@ -4,25 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-<<<<<<< HEAD
-    tools:context=".driver_dashboard">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="driver"
-        android:textSize="34sp"
-        tools:layout_editor_absoluteX="60dp"
-        tools:layout_editor_absoluteY="60dp" />
-=======
-    tools:context=".driver_dashboard"
+    tools:context=".driver_pending_dashboard"
     android:background="#FFFFFF">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/card_container"
         android:layout_width="383dp"
-        android:layout_height="438dp"
+        android:layout_height="401dp"
         android:layout_margin="20dp"
         android:background="@drawable/rounded_white_card"
         android:elevation="6dp"
@@ -33,7 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.498">
-
 
 
         <ImageView
@@ -48,33 +35,19 @@
             app:layout_constraintTop_toTopOf="parent" />
 
 
-
         <Button
-            android:id="@+id/add"
-            android:layout_width="220dp"
+            android:id="@+id/contact_admin"
+            android:layout_width="299dp"
             android:layout_height="48dp"
             android:layout_marginTop="12dp"
             android:backgroundTint="#ED5316"
-            android:text="Add a Driver profile"
+            android:text="Need a help? Contact support!"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.495"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView3" />
-
-        <TextView
-            android:id="@+id/support"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Need a help? Contact support!"
-            android:textColor="#0D2D4D"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.503"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/add" />
 
         <TextView
             android:id="@+id/hello"
@@ -97,14 +70,14 @@
             android:layout_height="92dp"
             android:layout_marginTop="16dp"
             android:fontFamily="sans-serif-condensed"
-            android:text="You haven't added any driver profile yet. Please add a driver profile and get start"
+            android:text="Dear driver,\nYour application is under review. Once it get approved we will notify you."
             android:textColor="#161733"
-            android:textSize="24sp"
+            android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hello" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
->>>>>>> 5670744 (Parent functions)
+
 </androidx.constraintlayout.widget.ConstraintLayout>
