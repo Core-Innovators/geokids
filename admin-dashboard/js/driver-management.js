@@ -5,7 +5,6 @@ function addDriverToActiveList(driverData) {
 
     if (!driversGrid) return;
 
-<<<<<<< HEAD
     // Create new driver card
     const driverCard = document.createElement('div');
     driverCard.className = 'driver-card';
@@ -22,34 +21,15 @@ function addDriverToActiveList(driverData) {
         </div>
         <h4>${driverData.fullName || driverData.name || 'N/A'}</h4>
         <p class="driver-vehicle">${driverData.address || driverData.vehicle || 'No address'}</p>
-=======
-    //Create new driver card
-    const driverCard = document.createElement('div');
-    driverCard.className = 'driver-card';
-    driverCard.setAttribute('data-driver-name', driverData.name);
-    driverCard.setAttribute('data-driver-phone', driverData.phone || 'N/A');
-    driverCard.setAttribute('data-driver-license', driverData.license || 'N/A');
-
-    driverCard.innerHTML = `
-        <div class="driver-avatar">
-            <i class="fas fa-user-circle"></i>
-        </div>
-        <h4>${driverData.name}</h4>
-        <p class="driver-vehicle">${driverData.vehicle}</p>
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
         <p class="driver-status active">Active</p>
         <button class="btn-view-details">View Details</button>
     `;
 
     // Add click event to new button
     const viewBtn = driverCard.querySelector('.btn-view-details');
-<<<<<<< HEAD
     viewBtn.addEventListener('click', () => {
         handleViewDetails({ target: viewBtn });
     });
-=======
-    viewBtn.addEventListener('click', handleViewDetails);
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 
     // Add with animation
     driverCard.style.opacity = '0';
@@ -64,7 +44,6 @@ function addDriverToActiveList(driverData) {
     }, 50);
 }
 
-<<<<<<< HEAD
 
 // Reverse geocoding: Convert coordinates to location name
 async function getLocationName(lat, lng) {
@@ -122,17 +101,12 @@ async function getLocationName(lat, lng) {
 
 // Show comprehensive driver details modal with Firebase data
 async function showDriverDetailsModal(driverData) {
-=======
-// Show comprehensive driver details modal
-function showDriverDetailsModal(driverData) {
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
     // Remove existing modal if any
     const existingModal = document.getElementById('driver-details-modal');
     if (existingModal) {
         existingModal.remove();
     }
 
-<<<<<<< HEAD
     // Show loading modal first
     showLoadingModal();
 
@@ -466,166 +440,6 @@ window.setVehicleImage = function (index) {
     });
 };
 
-=======
-    // Get additional data from card attributes if available
-    const card = event.target.closest('.driver-card');
-    if (card) {
-        driverData.phone = card.getAttribute('data-driver-phone') || 'N/A';
-        driverData.license = card.getAttribute('data-driver-license') || 'N/A';
-    }
-
-    // Mock comprehensive data - replace with Firebase data in production
-    const driverDetails = {
-        profileImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(driverData.name || 'Driver')}&size=200&background=FF6B3D&color=fff&bold=true`,
-        email: 'driver@geokids.com',
-        address: '123 Main Street, Colombo',
-        experience: '5 years',
-        rating: '4.8',
-        vehicleModel: driverData.vehicle || 'Toyota Hiace',
-        vehicleNumber: 'ABC-1234',
-        vehicleColor: 'White',
-        vehicleCapacity: '12 seats',
-        vehicleImage: 'https://via.placeholder.com/400x250/FF6B3D/FFFFFF?text=Vehicle+Image',
-        assignedStudents: [
-            { name: 'Emma Wilson', grade: 'Grade 5', pickup: '7:30 AM' },
-            { name: 'Noah Brown', grade: 'Grade 3', pickup: '7:45 AM' },
-            { name: 'Olivia Davis', grade: 'Grade 4', pickup: '8:00 AM' }
-        ]
-    };
-
-    // Create comprehensive modal
-    const modal = document.createElement('div');
-    modal.id = 'driver-details-modal';
-    modal.className = 'driver-modal-overlay';
-
-    modal.innerHTML = `
-        <div class="modal-content-large">
-            <!-- Orange Header -->
-            <div class="modal-header-orange">
-                <h2><i class="fa fa-user-circle"></i> Driver Profile</h2>
-                <button id="close-modal" class="modal-close-btn">&times;</button>
-            </div>
-            
-            <div class="modal-body-scroll">
-                <!-- Profile Section -->
-                <div class="driver-profile-section">
-                    <div class="profile-image-section">
-                        <img src="${driverDetails.profileImage}" alt="Profile" class="driver-profile-img">
-                        <div class="rating-badge">
-                            <i class="fas fa-star"></i> ${driverDetails.rating}/5.0
-                        </div>
-                    </div>
-                    
-                    <div class="profile-info-section">
-                        <h3>${driverData.name}</h3>
-                        <p class="experience-text"><i class="fas fa-briefcase"></i> ${driverDetails.experience} experience</p>
-                        
-                        <div class="contact-grid">
-                            <div class="contact-item">
-                                <p class="label"><i class="fas fa-phone"></i> Phone</p>
-                                <p class="value">${driverData.phone || 'N/A'}</p>
-                            </div>
-                            <div class="contact-item">
-                                <p class="label"><i class="fas fa-envelope"></i> Email</p>
-                                <p class="value">${driverDetails.email}</p>
-                            </div>
-                            <div class="contact-item">
-                                <p class="label"><i class="fas fa-id-card"></i> License</p>
-                                <p class="value">${driverData.license || 'N/A'}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Vehicle Section -->
-                <div class="vehicle-section">
-                    <h4><i class="fas fa-car"></i> Vehicle Information</h4>
-                    
-                    <div class="vehicle-grid">
-                        <div class="vehicle-image-col">
-                            <img src="${driverDetails.vehicleImage}" alt="Vehicle" class="vehicle-img">
-                            <div class="vehicle-specs">
-                                <div class="spec-item">
-                                    <span class="spec-label">Model</span>
-                                    <span class="spec-value">${driverDetails.vehicleModel}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">Number</span>
-                                    <span class="spec-value">${driverDetails.vehicleNumber}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">Color</span>
-                                    <span class="spec-value">${driverDetails.vehicleColor}</span>
-                                </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">Capacity</span>
-                                    <span class="spec-value">${driverDetails.vehicleCapacity}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Students List -->
-                        <div class="students-col">
-                            <h5><i class="fas fa-users"></i> Assigned Students (${driverDetails.assignedStudents.length})</h5>
-                            <div class="students-list">
-                                ${driverDetails.assignedStudents.map(student => `
-                                    <div class="student-item">
-                                        <div class="student-info">
-                                            <p class="student-name">${student.name}</p>
-                                            <p class="student-grade">${student.grade}</p>
-                                        </div>
-                                        <div class="pickup-time">
-                                            <p class="time-label">Pickup</p>
-                                            <p class="time-value">${student.pickup}</p>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="modal-actions">
-                    <button class="btn-modal btn-close-modal">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                    <button class="btn-modal btn-contact">
-                        <i class="fas fa-phone"></i> Contact Driver
-                    </button>
-                    <button class="btn-modal btn-route">
-                        <i class="fas fa-route"></i> View Route
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Add styles
-    addModalStyles();
-
-    document.body.appendChild(modal);
-
-    // Event handlers
-    const closeModal = () => {
-        modal.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => modal.remove(), 300);
-    };
-
-    modal.querySelector('#close-modal').addEventListener('click', closeModal);
-    modal.querySelector('.btn-close-modal').addEventListener('click', closeModal);
-    modal.querySelector('.btn-contact').addEventListener('click', () => {
-        window.location.href = `tel:${driverData.phone}`;
-    });
-    modal.querySelector('.btn-route').addEventListener('click', () => {
-        alert('Route view feature coming soon!');
-    });
-    modal.addEventListener('click', (e) => {
-        if (e.target.classList.contains('driver-modal-overlay')) closeModal();
-    });
-}
-
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
 // Add modal styles dynamically
 function addModalStyles() {
     if (document.getElementById('driver-modal-styles')) return;
@@ -928,7 +742,6 @@ function addModalStyles() {
             box-shadow: 0 10px 15px -3px rgba(255, 107, 61, 0.4);
         }
         
-<<<<<<< HEAD
         /* License Section Styles */
         .license-section {
             background: linear-gradient(135deg, #F7F9FC 0%, #E5E9F2 100%);
@@ -1191,8 +1004,6 @@ function addModalStyles() {
             margin: 0 0 1.5rem 0;
         }
         
-=======
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -1223,7 +1034,6 @@ function addModalStyles() {
                 grid-template-columns: 1fr;
             }
             
-<<<<<<< HEAD
             .license-grid {
                 grid-template-columns: 1fr;
             }
@@ -1232,8 +1042,6 @@ function addModalStyles() {
                 grid-template-columns: 1fr;
             }
             
-=======
->>>>>>> 327c339 (Implement Driver Application Status Management and Conditional Navigation(refs #16))
             .modal-actions {
                 flex-direction: column;
             }
