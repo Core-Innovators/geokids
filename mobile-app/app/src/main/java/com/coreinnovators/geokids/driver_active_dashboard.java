@@ -1,5 +1,9 @@
 package com.coreinnovators.geokids;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,11 +41,11 @@ public class driver_active_dashboard extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private boolean isRideActive = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_active_dashboard);
+
 
         // Initialize Firebase
         auth = FirebaseAuth.getInstance();
