@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoKids Admin - Login</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FF6B3D 0%, #E85A2F 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem 2.5rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section img {
+            width: 300px;
+            height: 122px;
+            margin-bottom: 1rem;
+        }
+
+        .logo-section h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #1E293B;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-section p {
+            color: #64748B;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
+            font-size: 1.125rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 2px solid #E5E9F2;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: #F7F9FC;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FF6B3D;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 107, 61, 0.1);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748B;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #FF6B3D;
+        }
+
+        .forgot-password {
+            color: #FF6B3D;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #E85A2F;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #FF6B3D 0%, #E85A2F 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(255, 107, 61, 0.3);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(255, 107, 61, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            color: #DC2626;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid #FECACA;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .default-credentials {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #DBEAFE;
+            border-radius: 0.75rem;
+            border: 1px solid #BFDBFE;
+        }
+
+        .default-credentials h4 {
+            color: #1E40AF;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .default-credentials p {
+            color: #1E40AF;
+            font-size: 0.875rem;
+            font-family: 'Courier New', monospace;
+            margin: 0.25rem 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo-section h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <img src="assets/logo.png" alt="GeoKids Logo">
+            <h1>GeoKids Admin</h1>
+            <p>Sign in to access your dashboard</p>
+        </div>
+
+        <form id="login-form">
+            <div class="error-message" id="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                Invalid username or password
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" class="form-input" placeholder="Enter your username" required
+                        autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password" required
+                        autocomplete="current-password">
+                </div>
+            </div>
+
+            <div class="remember-forgot">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember-me">
+                    <span>Remember me</span>
+                </label>
+                <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="login-button" id="login-button">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Default credentials info (remove in production) 
+        <div class="default-credentials">
+            <h4><i class="fas fa-info-circle"></i> Default Credentials</h4>
+            <p><strong>Username:</strong> admin</p>
+            <p><strong>Password:</strong> geokids2025</p>
+        </div> -->
+    </div>
+
+    <script>
+        // Admin credentials (In production, change these or use backend authentication)
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'geokids2025'
+        };
+
+        // Check if already logged in
+        if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+            const errorMessage = document.getElementById('error-message');
+            const loginButton = document.getElementById('login-button');
+
+            // Clear previous errors
+            errorMessage.classList.remove('show');
+
+            // Show loading state
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<span class="loading-spinner"></span> Signing in...';
+
+            // Simulate network delay for better UX
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // Validate credentials
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Successful login
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                localStorage.setItem('adminUsername', username);
+                localStorage.setItem('loginTime', new Date().toISOString());
+
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+
+                // Show success state
+                loginButton.innerHTML = '<i class="fas fa-check"></i> Success! Redirecting...';
+                loginButton.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            } else {
+                // Failed login
+                errorMessage.classList.add('show');
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Sign In';
+
+                // Clear password field
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        });
+
+        // Enter key support
+        document.getElementById('username').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+
+        // Forgot password handler (placeholder)
+        document.querySelector('.forgot-password').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Please contact your system administrator to reset your password.');
+        });
+    </script>
+</body>
+
+</html>
