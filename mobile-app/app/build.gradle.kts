@@ -21,24 +21,28 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    // Add this to handle resource parsing issues
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
-<<<<<<< HEAD
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
 
-=======
     // AndroidX Core
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation ("androidx.appcompat:appcompat:1.6.1")
@@ -46,16 +50,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
 
     // Testing
->>>>>>> 5670744 (Parent functions)
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
-<<<<<<< HEAD
     // ✅ Firebase BOM (use this specific stable version)
-=======
     // Firebase BOM
->>>>>>> 5670744 (Parent functions)
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
     // Firebase Authentication + Firestore
@@ -65,16 +65,13 @@ dependencies {
     // Optional Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-<<<<<<< HEAD
     // ✅ DataStore dependencies (required by Firestore since v26)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.datastore:datastore:1.1.1")
 
     // (Optional but recommended) Kotlin Coroutines if you use async Firebase
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-}
 
-=======
     // DataStore dependencies (required by Firestore)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.datastore:datastore:1.1.1")
@@ -91,8 +88,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
-    implementation ("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
-
 }
->>>>>>> 5670744 (Parent functions)

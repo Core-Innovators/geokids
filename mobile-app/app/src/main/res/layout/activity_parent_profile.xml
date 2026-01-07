@@ -21,51 +21,6 @@
             android:textStyle="bold"
             android:layout_marginBottom="40dp" />
 
-        <!-- Profile Options [1] -->
-        <Button
-            android:id="@+id/btnAddChild"
-            style="@style/ProfileButtonStyle"
-            android:text="Add New Child Profile"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <Button
-            android:id="@+id/btnChooseDriver"
-            style="@style/ProfileButtonStyle"
-            android:text="Choose New Driver"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <Button
-            android:id="@+id/btnUpdatePickup"
-            style="@style/ProfileButtonStyle"
-            android:text="Update Pickup Location"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <Button
-            android:id="@+id/btnUpdateDetails"
-            style="@style/ProfileButtonStyle"
-            android:text="Update Child Details"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <Button
-            android:id="@+id/btnInformAbsence"
-            style="@style/ProfileButtonStyle"
-            android:text="Inform Child Absence"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <Button
-            android:id="@+id/btnContactAdmin"
-            style="@style/ProfileButtonStyle"
-            android:text="Contact Admin/Inquiries"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
-
-        <!-- Delete Account (Red styling) [1] -->
-        <Button
-            android:id="@+id/btnDeleteAccount"
-            style="@style/ProfileButtonStyle"
-            android:text="Delete Account"
-            android:textColor="#FF0000"
-            android:background="@drawable/pill_button_red_bg"
-            android:drawableEnd="@drawable/ic_chevron_right_red" />
 
     </LinearLayout>
 </ScrollView>

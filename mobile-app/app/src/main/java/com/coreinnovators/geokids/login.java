@@ -3,10 +3,9 @@ package com.coreinnovators.geokids;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-<<<<<<< HEAD
-=======
+
 import android.util.Log;
->>>>>>> 5670744 (Parent functions)
+
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,19 +15,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-<<<<<<< HEAD
-=======
+
 import com.google.firebase.firestore.DocumentSnapshot;
->>>>>>> 5670744 (Parent functions)
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class login extends AppCompatActivity {
 
-<<<<<<< HEAD
-=======
+
     private static final String TAG = "LoginActivity";
 
->>>>>>> 5670744 (Parent functions)
     private EditText emailEt, passwordEt;
     private Button loginBtn;
     private TextView registerTv;
@@ -62,19 +58,15 @@ public class login extends AppCompatActivity {
             return;
         }
 
-<<<<<<< HEAD
-=======
+
         // Disable login button during authentication
         loginBtn.setEnabled(false);
         loginBtn.setText("Logging in...");
-
->>>>>>> 5670744 (Parent functions)
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
-<<<<<<< HEAD
                             db.collection("users").document(user.getUid())
                                     .get()
                                     .addOnSuccessListener(doc -> {
@@ -97,7 +89,7 @@ public class login extends AppCompatActivity {
                 });
     }
 }
-=======
+
                             checkUserRoleAndNavigate(user.getUid());
                         }
                     } else {

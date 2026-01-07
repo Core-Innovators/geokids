@@ -74,15 +74,18 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/child_name" />
 
-                <!-- Child Age Spinner -->
-                <Spinner
+                <!-- Child Age (Changed from Spinner to EditText) -->
+                <EditText
                     android:id="@+id/child_age"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginTop="12dp"
                     android:background="@drawable/rounded_white_card"
+                    android:hint="Child Age"
+                    android:inputType="number"
                     android:padding="12dp"
-                    android:prompt="@string/child_age_prompt"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/parent_name" />
@@ -120,15 +123,18 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/parent_nic" />
 
-                <!-- Grade Spinner -->
-                <Spinner
+                <!-- Child Grade (Changed from Spinner to EditText) -->
+                <EditText
                     android:id="@+id/child_grade"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginTop="12dp"
                     android:background="@drawable/rounded_white_card"
+                    android:hint="Child Grade (e.g., Grade 1, Grade 2)"
+                    android:inputType="text"
                     android:padding="12dp"
-                    android:prompt="@string/child_age_prompt"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/parent_contact" />
@@ -168,8 +174,8 @@
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginTop="20dp"
-                    android:backgroundTint="#0D2D4D"
-                    android:text="Select Child School"
+                    android:backgroundTint="#ED5316"
+                    android:text="Next"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
@@ -178,21 +184,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/child_profile_image" />
 
                 <!-- Submit Button -->
-                <Button
-                    android:id="@+id/submit_button"
-                    android:layout_width="160dp"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="16dp"
-                    android:backgroundTint="#ED5316"
-                    android:text="Submit"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/select_school" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

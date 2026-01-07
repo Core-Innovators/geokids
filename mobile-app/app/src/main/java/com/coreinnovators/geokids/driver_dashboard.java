@@ -1,13 +1,11 @@
 package com.coreinnovators.geokids;
 
-<<<<<<< HEAD
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-public class driver_dashboard extends AppCompatActivity {
 
-=======
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,14 +27,10 @@ public class driver_dashboard extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseFirestore db;
 
->>>>>>> 5670744 (Parent functions)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_dashboard);
-<<<<<<< HEAD
-=======
-
         hello = findViewById(R.id.hello);
         add = findViewById(R.id.add);
 
@@ -72,6 +66,5 @@ public class driver_dashboard extends AppCompatActivity {
             Intent intent = new Intent(driver_dashboard.this, DriverFormActivity.class);
             startActivity(intent);
         });
->>>>>>> 5670744 (Parent functions)
     }
 }

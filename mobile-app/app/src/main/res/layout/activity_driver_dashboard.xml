@@ -4,20 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-<<<<<<< HEAD
     tools:context=".driver_dashboard">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="driver"
-        android:textSize="34sp"
-        tools:layout_editor_absoluteX="60dp"
-        tools:layout_editor_absoluteY="60dp" />
-=======
-    tools:context=".driver_dashboard"
-    android:background="#FFFFFF">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/card_container"
@@ -106,5 +93,4 @@
             app:layout_constraintTop_toBottomOf="@+id/hello" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
->>>>>>> 5670744 (Parent functions)
 </androidx.constraintlayout.widget.ConstraintLayout>
