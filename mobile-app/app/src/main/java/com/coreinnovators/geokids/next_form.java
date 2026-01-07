@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -400,36 +401,46 @@ public class next_form extends AppCompatActivity {
             return;
         }
 
-        // Create update map
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("frontLicenseUrl", frontLicenseUrl);
-        updates.put("backLicenseUrl", backLicenseUrl);
-        updates.put("vehicleImageUrls", vehicleImageUrls);
-        updates.put("routeData", selectedRouteData.toMap());  // Store complete route with coordinates
-        updates.put("updatedAt", System.currentTimeMillis());
+        // Create complete driver data map
+        Map<String, Object> driverData = new HashMap<>();
+        driverData.put("frontLicenseUrl", frontLicenseUrl);
+        driverData.put("backLicenseUrl", backLicenseUrl);
+        driverData.put("vehicleImageUrls", vehicleImageUrls);
+        driverData.put("routeData", selectedRouteData.toMap());
+        driverData.put("status", "pending");  // Set status to pending
+        driverData.put("updatedAt", System.currentTimeMillis());
+        driverData.put("submittedAt", System.currentTimeMillis());
 
         Log.d(TAG, "Updating Firestore for driver: " + driverId);
+        Log.d(TAG, "Setting status to: pending");
 
-        // Update Firestore document
+        // Use SET with merge to update existing document
         firestore.collection(COLLECTION_NAME)
                 .document(driverId)
-                .update(updates)
+                .set(driverData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     showLoading(false);
                     Log.d(TAG, "Driver data updated successfully!");
+                    Log.d(TAG, "Status set to pending in Firestore");
+
                     Toast.makeText(this, "Registration completed successfully!",
                             Toast.LENGTH_SHORT).show();
 
-                    // Navigate to success screen or home
+                    // Navigate to pending dashboard
+                    String driverName = getIntent().getStringExtra("driver_name");
+                    Intent intent = new Intent(next_form.this, driver_pending_dashboard.class);
+                    intent.putExtra("driver_id", driverId);
+                    if (driverName != null) {
+                        intent.putExtra("driver_name", driverName);
+                    }
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
-                    // Or navigate to another activity:
-                    // Intent intent = new Intent(next_form.this, HomeActivity.class);
-                    // startActivity(intent);
-                    // finish();
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);
                     Log.e(TAG, "Error updating driver data: " + e.getMessage());
+                    e.printStackTrace();
                     Toast.makeText(this, "Failed to save data: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
                 });

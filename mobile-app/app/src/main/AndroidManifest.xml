@@ -19,6 +19,30 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
         <activity
+            android:name=".available_pickup"
+            android:exported="false" />
+        <activity
+            android:name=".driver_map"
+            android:exported="false" />
+        <activity
+            android:name=".QR_scan"
+            android:exported="false" />
+        <activity
+            android:name=".driver_profile"
+            android:exported="false" />
+        <activity
+            android:name=".view_request"
+            android:exported="false" />
+        <activity
+            android:name=".driver_rejection_screen"
+            android:exported="false" />
+        <activity
+            android:name=".driver_active_dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".driver_pending_dashboard"
+            android:exported="false" />
+        <activity
             android:name=".ChooseMapRouteDialog"
             android:exported="false" />
         <activity
