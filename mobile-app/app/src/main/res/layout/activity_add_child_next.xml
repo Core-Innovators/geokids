@@ -5,13 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".parent_dashboard"
+    tools:context=".AddChildNext"
     android:background="#F5F5F5">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:scrollbarStyle="outsideOverlay">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -74,7 +76,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/child_name" />
 
-                <!-- Child Age (Changed from Spinner to EditText) -->
+                <!-- Child Age -->
                 <EditText
                     android:id="@+id/child_age"
                     android:layout_width="0dp"
@@ -90,40 +92,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/parent_name" />
 
-                <!-- Parent NIC -->
-                <EditText
-                    android:id="@+id/parent_nic"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/rounded_white_card"
-                    android:hint="Parent NIC No"
-                    android:inputType="text"
-                    android:padding="12dp"
-                    android:textColor="#161733"
-                    android:textColorHint="#999999"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/child_age" />
-
-                <!-- Parent Contact Number -->
-                <EditText
-                    android:id="@+id/parent_contact"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/rounded_white_card"
-                    android:hint="Parent Contact No"
-                    android:inputType="phone"
-                    android:maxLength="10"
-                    android:padding="12dp"
-                    android:textColor="#161733"
-                    android:textColorHint="#999999"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/parent_nic" />
-
-                <!-- Child Grade (Changed from Spinner to EditText) -->
+                <!-- Child Grade -->
                 <EditText
                     android:id="@+id/child_grade"
                     android:layout_width="0dp"
@@ -137,7 +106,23 @@
                     android:textColorHint="#999999"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/parent_contact" />
+                    app:layout_constraintTop_toBottomOf="@+id/child_age" />
+
+                <!-- Child School -->
+                <EditText
+                    android:id="@+id/child_school"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Child School Name"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/child_grade" />
 
                 <!-- Select Profile Picture Text -->
                 <TextView
@@ -150,7 +135,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/child_grade" />
+                    app:layout_constraintTop_toBottomOf="@+id/child_school" />
 
                 <!-- Profile Image -->
                 <ImageView
@@ -168,22 +153,21 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/selecttext" />
 
-                <!-- Select School Button -->
+                <!-- Submit Button -->
                 <Button
                     android:id="@+id/select_school"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginTop="20dp"
                     android:backgroundTint="#ED5316"
-                    android:text="Next"
+                    android:text="Submit"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/child_profile_image" />
-
-                <!-- Submit Button -->
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
