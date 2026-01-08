@@ -8,121 +8,171 @@
     tools:context=".parent_dashboard"
     android:background="#F5F5F5">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/card_container"
-        android:layout_width="354dp"
-        android:layout_height="586dp"
-        android:layout_margin="20dp"
-        android:background="@drawable/rounded_white_card"
-        android:elevation="6dp"
-        android:padding="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <!-- Logo -->
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="144dp"
-            android:layout_height="101dp"
-            android:layout_marginTop="4dp"
-            android:contentDescription="GeoKids Logo"
-            android:scaleType="fitCenter"
-            android:src="@drawable/logo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <!-- Parent Full Name -->
-        <EditText
-            android:id="@+id/parent_name"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_white_card"
-            android:hint="Parent Full Name"
-            android:inputType="textPersonName"
-            android:padding="12dp"
-            android:textColor="#161733"
-            android:textColorHint="#999999"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logo" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/card_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/rounded_white_card"
+                android:elevation="6dp"
+                android:padding="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Parent NIC -->
-        <EditText
-            android:id="@+id/parent_nic"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/rounded_white_card"
-            android:hint="Parent NIC No"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="#161733"
-            android:textColorHint="#999999"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/parent_name" />
+                <!-- Logo -->
+                <ImageView
+                    android:id="@+id/logo"
+                    android:layout_width="120dp"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="4dp"
+                    android:contentDescription="GeoKids Logo"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/logo"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Parent Contact Number 1 -->
-        <EditText
-            android:id="@+id/parent_contact"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/rounded_white_card"
-            android:hint="Parent Contact No 1"
-            android:inputType="phone"
-            android:maxLength="10"
-            android:padding="12dp"
-            android:textColor="#161733"
-            android:textColorHint="#999999"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/parent_nic" />
+                <!-- Parent Full Name -->
+                <EditText
+                    android:id="@+id/parent_name"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Parent Full Name"
+                    android:inputType="textPersonName"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/logo" />
 
-        <!-- Parent Contact Number 2 -->
-        <EditText
-            android:id="@+id/parent_contact2"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/rounded_white_card"
-            android:hint="Parent Contact No 2 (Optional)"
-            android:inputType="phone"
-            android:maxLength="10"
-            android:padding="12dp"
-            android:textColor="#161733"
-            android:textColorHint="#999999"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/parent_contact" />
+                <!-- Parent NIC -->
+                <EditText
+                    android:id="@+id/parent_nic"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Parent NIC No"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/parent_name" />
 
+                <!-- Parent Contact Number 1 -->
+                <EditText
+                    android:id="@+id/parent_contact"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Parent Contact No 1"
+                    android:inputType="phone"
+                    android:maxLength="10"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/parent_nic" />
 
-        <!-- Pickup Location -->
+                <!-- Parent Contact Number 2 -->
+                <EditText
+                    android:id="@+id/parent_contact2"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Parent Contact No 2 (Optional)"
+                    android:inputType="phone"
+                    android:maxLength="10"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/parent_contact" />
 
-        <Button
-            android:id="@+id/select_school"
-            android:layout_width="120dp"
-            android:layout_height="55dp"
-            android:backgroundTint="#ED5316"
-            android:fontFamily="sans-serif-medium"
-            android:text="Submit"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+                <!-- Pickup Location Label -->
+                <TextView
+                    android:id="@+id/pickup_location_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Select Pickup Location"
+                    android:textColor="#161733"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/parent_contact2" />
 
-        <!-- Search Button -->
+                <!-- Pickup Location Display -->
+                <EditText
+                    android:id="@+id/pickup_location_display"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/rounded_white_card"
+                    android:hint="Tap button below to select location"
+                    android:enabled="false"
+                    android:padding="12dp"
+                    android:textColor="#161733"
+                    android:textColorHint="#999999"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/pickup_location_label" />
 
-        <!-- Next Button -->
+                <!-- Pick Location Button -->
+                <Button
+                    android:id="@+id/pick_location_btn"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="#0D2D4D"
+                    android:text="📍 Pick Location on Map"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/pickup_location_display" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Submit Button -->
+                <Button
+                    android:id="@+id/submit_button"
+                    android:layout_width="0dp"
+                    android:layout_height="55dp"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="#ED5316"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Submit"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/pick_location_btn" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

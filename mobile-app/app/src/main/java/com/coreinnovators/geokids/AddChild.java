@@ -16,15 +16,23 @@ import java.util.Map;
 
 public class AddChild extends AppCompatActivity {
     private static final String TAG = "AddChildActivity";
+    private static final int LOCATION_PICKER_REQUEST = 1001;
 
     // UI Components
     private EditText parentNameInput, parentNicInput, parentContact1Input, parentContact2Input;
-    private Button submitButton;
+    private EditText pickupLocationDisplay;
+    private Button pickLocationButton, submitButton;
 
     // Firebase
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
     private String currentUserId;
+
+    // Pickup Location Data
+    private double pickupLatitude = 0.0;
+    private double pickupLongitude = 0.0;
+    private String pickupAddress = "";
+    private boolean isLocationSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,11 +68,60 @@ public class AddChild extends AppCompatActivity {
         parentNicInput = findViewById(R.id.parent_nic);
         parentContact1Input = findViewById(R.id.parent_contact);
         parentContact2Input = findViewById(R.id.parent_contact2);
-        submitButton = findViewById(R.id.select_school);
+        pickupLocationDisplay = findViewById(R.id.pickup_location_display);
+        pickLocationButton = findViewById(R.id.pick_location_btn);
+        submitButton = findViewById(R.id.submit_button);
     }
 
     private void setupListeners() {
+        // Pick location button
+        pickLocationButton.setOnClickListener(v -> openLocationPicker());
+
+        // Submit button
         submitButton.setOnClickListener(v -> validateAndSubmit());
+    }
+
+    private void openLocationPicker() {
+        try {
+            Intent intent = new Intent(this, LocationPickerActivity.class);
+
+            // If location was already selected, pass it to the map
+            if (isLocationSelected) {
+                intent.putExtra("latitude", pickupLatitude);
+                intent.putExtra("longitude", pickupLongitude);
+            }
+
+            startActivityForResult(intent, LOCATION_PICKER_REQUEST);
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening location picker: " + e.getMessage());
+            Toast.makeText(this, "Error opening map. Please ensure LocationPickerActivity exists.",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == LOCATION_PICKER_REQUEST && resultCode == RESULT_OK && data != null) {
+            // Get the selected location
+            pickupLatitude = data.getDoubleExtra("latitude", 0);
+            pickupLongitude = data.getDoubleExtra("longitude", 0);
+            pickupAddress = data.getStringExtra("address");
+
+            isLocationSelected = true;
+
+            // Update the display field
+            if (pickupAddress != null && !pickupAddress.isEmpty()) {
+                pickupLocationDisplay.setText(pickupAddress);
+            } else {
+                pickupLocationDisplay.setText(String.format("Lat: %.6f, Lng: %.6f",
+                        pickupLatitude, pickupLongitude));
+            }
+
+            Log.d(TAG, "Location selected - Lat: " + pickupLatitude + ", Lng: " + pickupLongitude);
+            Toast.makeText(this, "Pickup location selected!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadParentData() {
@@ -121,6 +178,13 @@ public class AddChild extends AppCompatActivity {
             return;
         }
 
+        // Validate pickup location
+        if (!isLocationSelected) {
+            Toast.makeText(this, "Please select a pickup location",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // All validations passed, proceed with saving
         submitParentData(parentName, parentNic, parentContact1, parentContact2);
     }
@@ -137,11 +201,23 @@ public class AddChild extends AppCompatActivity {
         parentData.put("parentNic", parentNic);
         parentData.put("parentContact1", parentContact1);
         parentData.put("parentContact2", parentContact2);
+
+        // Add pickup location data
+        parentData.put("pickupAddress", pickupAddress);
+
+        // Store pickup coordinates in a nested map
+        Map<String, Object> pickupCoordinates = new HashMap<>();
+        pickupCoordinates.put("latitude", pickupLatitude);
+        pickupCoordinates.put("longitude", pickupLongitude);
+        parentData.put("pickupCoordinates", pickupCoordinates);
+
         parentData.put("createdAt", System.currentTimeMillis());
         parentData.put("updatedAt", System.currentTimeMillis());
         parentData.put("status", "active");
 
         Log.d(TAG, "Saving parent data for: " + currentUserId);
+        Log.d(TAG, "Pickup Location - Lat: " + pickupLatitude + ", Lng: " + pickupLongitude);
+        Log.d(TAG, "Pickup Address: " + pickupAddress);
 
         // Add parent document to Firestore
         firestore.collection("parents")
@@ -163,15 +239,14 @@ public class AddChild extends AppCompatActivity {
                         intent.putExtra("parent_nic", parentNic);
                         intent.putExtra("parent_contact1", parentContact1);
                         intent.putExtra("parent_contact2", parentContact2);
+                        intent.putExtra("pickup_latitude", pickupLatitude);
+                        intent.putExtra("pickup_longitude", pickupLongitude);
+                        intent.putExtra("pickup_address", pickupAddress);
 
                         Log.d(TAG, "Starting AddChildNext activity");
                         Log.d(TAG, "Intent extras - parent_doc_id: " + parentDocId);
 
                         startActivity(intent);
-
-                        // Don't call finish() immediately - let the activity start first
-                        // Only finish after a short delay or don't finish at all
-                        // This allows users to go back if needed
 
                     } catch (Exception e) {
                         Log.e(TAG, "Error starting AddChildNext: " + e.getMessage());
@@ -197,6 +272,7 @@ public class AddChild extends AppCompatActivity {
             parentNicInput.setEnabled(!show);
             parentContact1Input.setEnabled(!show);
             parentContact2Input.setEnabled(!show);
+            pickLocationButton.setEnabled(!show);
         });
     }
 }

@@ -10,20 +10,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class AddChildNext extends AppCompatActivity {
     private static final String TAG = "AddChildNext";
+    private static final String COLLECTION_NAME = "children";
 
     // UI Components
-    private EditText childNameInput, childAgeInput;
-    private EditText childSchoolInput, childGradeInput;
+    private EditText childNameInput, parentNameInput, childAgeInput;
+    private EditText childGradeInput, childSchoolInput;
     private ImageView childProfileImage;
     private Button submitButton;
 
@@ -31,12 +35,9 @@ public class AddChildNext extends AppCompatActivity {
     private FirebaseFirestore firestore;
 
     // Data from previous activity
-    private String parentDocId;
+    private String childId;
     private String parentId;
     private String parentName;
-    private String parentNic;
-    private String parentContact1;
-    private String parentContact2;
 
     // Selected Image
     private Uri selectedImageUri;
@@ -52,8 +53,22 @@ public class AddChildNext extends AppCompatActivity {
         // Initialize Firebase
         firestore = FirebaseFirestore.getInstance();
 
-        // Get data from previous activity
-        getIntentData();
+        // Get data from intent
+        Intent intent = getIntent();
+        childId = intent.getStringExtra("child_id");
+        parentId = intent.getStringExtra("parent_id");
+        parentName = intent.getStringExtra("parent_name");
+
+        Log.d(TAG, "Child ID: " + childId);
+        Log.d(TAG, "Parent ID: " + parentId);
+        Log.d(TAG, "Parent Name: " + parentName);
+
+        // Check if childId is null - if so, create a new child document
+        if (childId == null || childId.isEmpty()) {
+            Log.d(TAG, "Child ID not provided, creating new child document");
+            childId = firestore.collection(COLLECTION_NAME).document().getId();
+            Log.d(TAG, "Generated Child ID: " + childId);
+        }
 
         // Initialize Views
         initializeViews();
@@ -63,29 +78,21 @@ public class AddChildNext extends AppCompatActivity {
 
         // Setup Listeners
         setupListeners();
-    }
 
-    private void getIntentData() {
-        Intent intent = getIntent();
-        parentDocId = intent.getStringExtra("parent_doc_id");
-        parentId = intent.getStringExtra("parent_id");
-        parentName = intent.getStringExtra("parent_name");
-        parentNic = intent.getStringExtra("parent_nic");
-        parentContact1 = intent.getStringExtra("parent_contact1");
-        parentContact2 = intent.getStringExtra("parent_contact2");
-
-        Log.d(TAG, "Parent Doc ID: " + parentDocId);
-        Log.d(TAG, "Parent ID: " + parentId);
-        Log.d(TAG, "Parent Name: " + parentName);
+        // Pre-fill parent name if available
+        if (parentName != null && !parentName.isEmpty()) {
+            parentNameInput.setText(parentName);
+        }
     }
 
     private void initializeViews() {
         childNameInput = findViewById(R.id.child_name);
+        parentNameInput = findViewById(R.id.parent_name);
         childAgeInput = findViewById(R.id.child_age);
-        childSchoolInput = findViewById(R.id.child_school);
         childGradeInput = findViewById(R.id.child_grade);
+        childSchoolInput = findViewById(R.id.child_school);
         childProfileImage = findViewById(R.id.child_profile_image);
-        submitButton = findViewById(R.id.submit_button);
+        submitButton = findViewById(R.id.select_school);
     }
 
     private void setupImagePicker() {
@@ -94,46 +101,51 @@ public class AddChildNext extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         selectedImageUri = result.getData().getData();
-                        if (childProfileImage != null && selectedImageUri != null) {
+                        if (childProfileImage != null) {
                             Glide.with(this)
                                     .load(selectedImageUri)
+                                    .circleCrop()
                                     .into(childProfileImage);
-                            Toast.makeText(this, "Profile image selected!",
-                                    Toast.LENGTH_SHORT).show();
                         }
+                        Toast.makeText(this, "Profile image selected!", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
     }
 
     private void setupListeners() {
-        // Profile image click to select image
-        childProfileImage.setOnClickListener(v -> {
-            Log.d(TAG, "Profile image clicked");
-            openImagePicker();
-        });
+        // Child profile image click
+        if (childProfileImage != null) {
+            childProfileImage.setOnClickListener(v -> openImagePicker());
+        }
 
-        // Submit button to save child data
+        // Submit button - validate and submit form
         submitButton.setOnClickListener(v -> validateAndSubmit());
     }
 
     private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
     }
 
     private void validateAndSubmit() {
         // Get input values
         String childName = childNameInput.getText().toString().trim();
+        String parentName = parentNameInput.getText().toString().trim();
         String childAge = childAgeInput.getText().toString().trim();
-        String childSchool = childSchoolInput.getText().toString().trim();
         String childGrade = childGradeInput.getText().toString().trim();
+        String childSchool = childSchoolInput.getText().toString().trim();
 
         // Validate inputs
         if (TextUtils.isEmpty(childName)) {
             childNameInput.setError("Child name is required");
             childNameInput.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(parentName)) {
+            parentNameInput.setError("Parent name is required");
+            parentNameInput.requestFocus();
             return;
         }
 
@@ -143,17 +155,9 @@ public class AddChildNext extends AppCompatActivity {
             return;
         }
 
-        // Validate age is a valid number
-        try {
-            int age = Integer.parseInt(childAge);
-            if (age <= 0 || age > 18) {
-                childAgeInput.setError("Please enter a valid age (1-18)");
-                childAgeInput.requestFocus();
-                return;
-            }
-        } catch (NumberFormatException e) {
-            childAgeInput.setError("Please enter a valid number");
-            childAgeInput.requestFocus();
+        if (TextUtils.isEmpty(childGrade)) {
+            childGradeInput.setError("Child grade is required");
+            childGradeInput.requestFocus();
             return;
         }
 
@@ -163,81 +167,84 @@ public class AddChildNext extends AppCompatActivity {
             return;
         }
 
-        if (TextUtils.isEmpty(childGrade)) {
-            childGradeInput.setError("Child grade is required");
-            childGradeInput.requestFocus();
-            return;
-        }
-
         if (selectedImageUri == null) {
-            Toast.makeText(this, "Please select a profile image",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please select a profile image", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // All validations passed
-        submitChildData(childName, childAge, childSchool, childGrade);
+        updateChildData(childName, parentName, childAge, childGrade, childSchool);
     }
 
-    private void submitChildData(String childName, String childAge,
-                                 String childSchool, String childGrade) {
+    private void updateChildData(String childName, String parentName, String childAge,
+                                 String childGrade, String childSchool) {
         // Show loading
         showLoading(true);
 
-        // Save data with local image URI
-        saveToFirestore(childName, childAge, childSchool, childGrade);
+        // Step 1: Upload image to Supabase
+        SupabaseHelper.uploadImage(this, selectedImageUri)
+                .thenAccept(imageUrl -> {
+                    // Step 2: Update Firestore with all child data including image URL
+                    runOnUiThread(() -> {
+                        updateFirestore(childName, parentName, childAge, childGrade,
+                                childSchool, imageUrl);
+                    });
+                })
+                .exceptionally(e -> {
+                    runOnUiThread(() -> {
+                        showLoading(false);
+                        Log.e(TAG, "Image upload failed: " + e.getMessage(), e);
+                        Toast.makeText(AddChildNext.this, "Failed to upload image: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    });
+                    return null;
+                });
     }
 
-    private void saveToFirestore(String childName, String childAge,
-                                 String childSchool, String childGrade) {
-        // Use the local image URI (stored in device)
-        String imageUrl = selectedImageUri.toString();
+    private void updateFirestore(String childName, String parentName, String childAge,
+                                 String childGrade, String childSchool, String imageUrl) {
+        if (childId == null || childId.isEmpty()) {
+            showLoading(false);
+            Toast.makeText(this, "Error: Child ID not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Create child data map
+        // Create update map with all child information
         Map<String, Object> childData = new HashMap<>();
-        childData.put("parentId", parentId);
-        childData.put("parentDocId", parentDocId);
         childData.put("childName", childName);
         childData.put("parentName", parentName);
         childData.put("childAge", childAge);
-        childData.put("childSchool", childSchool);
-        childData.put("parentNic", parentNic);
-        childData.put("parentContact1", parentContact1);
-        childData.put("parentContact2", parentContact2);
         childData.put("childGrade", childGrade);
-        childData.put("childProfileImageUri", imageUrl); // Local URI
+        childData.put("childSchool", childSchool);
+        childData.put("childProfileImageUrl", imageUrl);
+        childData.put("parentId", parentId);
         childData.put("createdAt", System.currentTimeMillis());
         childData.put("updatedAt", System.currentTimeMillis());
-        childData.put("status", "active");
 
-        Log.d(TAG, "Saving child data to Firestore");
-        Log.d(TAG, "Child Name: " + childName);
-        Log.d(TAG, "Child Age: " + childAge);
-        Log.d(TAG, "Child School: " + childSchool);
-        Log.d(TAG, "Child Grade: " + childGrade);
+        Log.d(TAG, "Saving child document: " + childId);
+        Log.d(TAG, "Child name: " + childName);
+        Log.d(TAG, "Image URL: " + imageUrl);
 
-        // Save to Firestore
-        firestore.collection("children")
-                .add(childData)
-                .addOnSuccessListener(documentReference -> {
+        // Use set with merge to create or update the document
+        firestore.collection(COLLECTION_NAME)
+                .document(childId)
+                .set(childData)
+                .addOnSuccessListener(aVoid -> {
                     showLoading(false);
-                    String childId = documentReference.getId();
-                    Log.d(TAG, "Child saved with ID: " + childId);
+                    Log.d(TAG, "Child data saved successfully");
+                    Toast.makeText(this, "Child profile completed successfully!",
+                            Toast.LENGTH_SHORT).show();
 
-                    Toast.makeText(this, "Child profile added successfully!",
-                            Toast.LENGTH_LONG).show();
-
-                    // Clear the form for adding another child
-                    clearForm();
-
-                    // Show dialog to add another child or go to dashboard
-                    showAddAnotherChildDialog();
+                    // Navigate to parent dashboard
+                    Intent intent = new Intent(AddChildNext.this, parent_dashboard.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);
-                    Log.e(TAG, "Error saving child: " + e.getMessage());
-                    e.printStackTrace();
-                    Toast.makeText(this, "Failed to save: " + e.getMessage(),
+                    Log.e(TAG, "Error saving child: " + e.getMessage(), e);
+                    Toast.makeText(this, "Failed to save child data: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
                 });
     }
@@ -247,44 +254,15 @@ public class AddChildNext extends AppCompatActivity {
             submitButton.setEnabled(!show);
             submitButton.setText(show ? "Saving..." : "Submit");
 
-            // Disable all inputs during save
+            // Disable all inputs during upload
             childNameInput.setEnabled(!show);
+            parentNameInput.setEnabled(!show);
             childAgeInput.setEnabled(!show);
-            childSchoolInput.setEnabled(!show);
             childGradeInput.setEnabled(!show);
-            childProfileImage.setEnabled(!show);
+            childSchoolInput.setEnabled(!show);
+            if (childProfileImage != null) {
+                childProfileImage.setEnabled(!show);
+            }
         });
-    }
-
-    private void clearForm() {
-        // Clear all child-specific fields
-        childNameInput.setText("");
-        childAgeInput.setText("");
-        childSchoolInput.setText("");
-        childGradeInput.setText("");
-
-        // Reset image to default avatar
-        childProfileImage.setImageResource(R.drawable.avatar);
-        selectedImageUri = null;
-    }
-
-    private void showAddAnotherChildDialog() {
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("Success!")
-                .setMessage("Child profile added successfully! Would you like to add another child?")
-                .setPositiveButton("Add Another Child", (dialog, which) -> {
-                    // Form is already cleared, just dismiss dialog
-                    dialog.dismiss();
-                })
-                .setNegativeButton("Go to Dashboard", (dialog, which) -> {
-                    // Navigate to parent dashboard
-                    Intent intent = new Intent(AddChildNext.this, parent_dashboard.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                            Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .setCancelable(false)
-                .show();
     }
 }

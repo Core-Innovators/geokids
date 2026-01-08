@@ -18,21 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
-
-
-
+        <activity
+            android:name=".LocationPickerActivity"
+            android:exported="false" />
         <activity
             android:name=".AddChild"
             android:exported="false" />
-
         <activity
             android:name=".AddChildNext"
             android:exported="false" />
-
         <activity
             android:name=".next_form"
             android:exported="false" />
-
         <activity
             android:name=".driver_pending_dashboard"
             android:exported="false" />
@@ -86,8 +83,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
