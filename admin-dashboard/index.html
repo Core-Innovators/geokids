@@ -139,7 +139,7 @@
                                     <th>Name</th>
                                     <th>Phone</th>
                                     <th>Vehicle Type</th>
-                                    <th>License Number</th>
+                                    <th>NIC Number</th>
                                     <th>Submitted</th>
                                     <th>Actions</th>
                                 </tr>
@@ -233,30 +233,30 @@
 
                 <div class="content-section">
                     <div class="section-header">
-                        <h3>Registered Parents</h3>
-                        <input type="search" class="search-input" placeholder="Search parents...">
+                        <h3>Registered Children</h3>
+                        <input type="search" class="search-input" id="search-children" placeholder="Search parents...">
                     </div>
 
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Parent Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Children</th>
-                                    <th>Joined</th>
+                                    <th>Child Name</th>
+                                    <th>Parent Phone</th>
+                                    <th>School Name</th>
+                                    <th>Grade</th>
+                                    <th>View Records</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <td>+94 75 456 7890</td>
-                            <td>Nishanthi@email.com</td>
-                            <td>3 Children</td>
-                            <td>Dec 28, 2024</td>
-                            <td>
-                                <button class="btn-view-details">View</button>
-                            </td>
-                            </tr>
+                            <tbody id="children-table-body">
+                                <!-- Children will be loaded from Firebase -->
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;">
+                                        <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
+                                        Loading children data...
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

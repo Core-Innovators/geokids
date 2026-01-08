@@ -163,6 +163,35 @@ async function getChildren(parentId) {
     }
 }
 
+// Get all registered children with their details (from children collection)
+async function getRegisteredChildren() {
+    try {
+        // Data is stored in 'children' collection with both parent and child info
+        const snapshot = await db.collection('children')
+            .where('status', '==', 'active')
+            .get();
+        const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return records.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    } catch (error) {
+        console.error('Error getting registered children:', error);
+        throw error;
+    }
+}
+
+// Get child record by ID with full details
+async function getChildById(childId) {
+    try {
+        const doc = await db.collection('children').doc(childId).get();
+        if (!doc.exists) {
+            throw new Error('Record not found');
+        }
+        return { id: doc.id, ...doc.data() };
+    } catch (error) {
+        console.error('Error getting record by ID:', error);
+        throw error;
+    }
+}
+
 // Firestore Operations for Trips
 async function getActiveTrips() {
     try {
@@ -264,6 +293,8 @@ window.FirebaseService = {
     rejectDriver,
     getParents,
     getChildren,
+    getRegisteredChildren,
+    getChildById,
     getActiveTrips,
     getTripHistory,
     listenToPendingDrivers,

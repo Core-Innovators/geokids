@@ -236,7 +236,7 @@ public class AddChildNext extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
 
                     // Navigate to parent dashboard
-                    Intent intent = new Intent(AddChildNext.this, parent_dashboard.class);
+                    Intent intent = new Intent(AddChildNext.this, ParentActiveDashboard.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
