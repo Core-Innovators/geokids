@@ -1,8 +1,7 @@
 package com.coreinnovators.geokids;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
+import androidx.cardview.widget.CardView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,11 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -41,11 +36,11 @@ public class driver_active_dashboard extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private boolean isRideActive = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_active_dashboard);
-
 
         // Initialize Firebase
         auth = FirebaseAuth.getInstance();
@@ -94,29 +89,44 @@ public class driver_active_dashboard extends AppCompatActivity {
         String uid = auth.getCurrentUser().getUid();
         Log.d(TAG, "Loading name for UID: " + uid);
 
-        db.collection("users").document(uid)
+        // Load from drivers collection instead of users collection
+        db.collection("drivers").document(uid)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     Log.d(TAG, "Document exists: " + snapshot.exists());
                     if (snapshot.exists()) {
                         Log.d(TAG, "All document data: " + snapshot.getData());
-                        String name = snapshot.getString("name");
+
+                        // Try to get fullName field first
+                        String name = snapshot.getString("fullName");
+
+                        // If fullName doesn't exist, try other possible field names
+                        if (name == null || name.isEmpty()) {
+                            name = snapshot.getString("name");
+                        }
+                        if (name == null || name.isEmpty()) {
+                            name = snapshot.getString("driverName");
+                        }
+
                         Log.d(TAG, "Name field value: " + name);
 
-                        if (name != null) {
+                        if (name != null && !name.isEmpty()) {
                             driverNameTv.setText(name);
                             Log.d(TAG, "Name set successfully: " + name);
                         } else {
-                            Log.w(TAG, "Name field is null");
+                            driverNameTv.setText("Driver");
+                            Log.w(TAG, "Name field is null or empty");
                         }
                     } else {
                         Log.w(TAG, "Document does not exist for UID: " + uid);
+                        driverNameTv.setText("Driver");
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to load user data: " + e.getMessage());
+                    Log.e(TAG, "Failed to load driver data: " + e.getMessage());
                     e.printStackTrace();
-                    Toast.makeText(this, "Failed to load user!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to load driver data!", Toast.LENGTH_SHORT).show();
+                    driverNameTv.setText("Driver");
                 });
     }
 
