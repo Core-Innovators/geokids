@@ -909,3 +909,166 @@ button {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--gray-400);
 }
+
+/* Modal Base Styles */
+.parent-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.modal-content-large {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-2xl);
+    animation: slideUp 0.3s ease;
+    position: relative;
+    z-index: 10001;
+}
+
+.modal-body-scroll {
+    padding: var(--spacing-xl);
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--gray-200);
+}
+
+.btn-modal {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--transition-base);
+}
+
+.btn-modal:hover {
+    transform: translateY(-2px);
+}
+
+.profile-info-section h3 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--gray-800);
+    margin: 0 0 0.5rem 0;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.contact-item .label {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    margin: 0 0 0.25rem 0;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.contact-item .label i {
+    color: var(--info);
+    margin-right: 0.25rem;
+}
+
+.contact-item .value {
+    font-size: 1rem;
+    color: var(--gray-800);
+    margin: 0;
+    font-weight: 600;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Responsive modal styles */
+@media (max-width: 768px) {
+    .modal-content-large {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-body-scroll {
+        padding: var(--spacing-md);
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .btn-modal {
+        width: 100%;
+        justify-content: center;
+    }
+}
