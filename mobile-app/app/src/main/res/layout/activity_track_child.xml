@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FFFFFF"
+    android:gravity="center_horizontal">
+
+    <!-- Screen Title based on Source [1] -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Track Your Child"
+        android:textColor="#003366"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Blank Square for Map Display -->
+    <!-- CardView is used to provide the rounded corners seen in Source [1] -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        android:layout_marginBottom="30dp">
+
+        <!-- Placeholder for actual Google Map fragment -->
+        <FrameLayout
+            android:id="@+id/mapPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#E0E0E0">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Map Display Area"
+                android:textColor="#888888" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Contact Driver Button - Using requested colour #ED5316 -->
+    <Button
+        android:id="@+id/btnContactDriver"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Contact Driver"
+        android:textAllCaps="false"
+        android:backgroundTint="#ED5316"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_marginBottom="15dp"
+        app:cornerRadius="15dp" />
+
+    <!-- Emergency Contact Button based on Source [1] -->
+    <Button
+        android:id="@+id/btnEmergencyContact"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Emergency Contact"
+        android:textAllCaps="false"
+        android:backgroundTint="#FFFFFF"
+        android:textColor="#FF0000"
+        android:textSize="18sp"
+        app:strokeColor="#FF0000"
+        app:strokeWidth="1dp"
+        app:cornerRadius="15dp" />
+
+</LinearLayout>

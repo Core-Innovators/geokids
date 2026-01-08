@@ -65,11 +65,28 @@ public class role_select extends AppCompatActivity {
                     .update(roleMap)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(role_select.this, "Role saved: " + selectedRole, Toast.LENGTH_SHORT).show();
+<<<<<<< HEAD
                         startActivity(new Intent(role_select.this, login.class));
+=======
+
+                        // Navigate based on role
+                        Intent intent;
+                        if (selectedRole.equals("Parent")) {
+                            intent = new Intent(role_select.this, parent_dashboard.class);
+                        } else {
+                            // Navigate to driver dashboard or login
+                            intent = new Intent(role_select.this, login.class);
+                        }
+                        startActivity(intent);
+>>>>>>> 5670744 (Parent functions)
                         finish();
                     })
                     .addOnFailureListener(e ->
                             Toast.makeText(role_select.this, "Error saving role: " + e.getMessage(), Toast.LENGTH_LONG).show());
         });
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5670744 (Parent functions)
