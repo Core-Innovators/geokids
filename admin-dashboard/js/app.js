@@ -480,10 +480,132 @@ async function loadMockData() {
                 driversGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94A3B8;">No active drivers yet</p>';
             }
         }
+
+        // Load children data
+        await loadChildrenData();
+
     } catch (error) {
         console.error('❌ Error loading drivers from Firebase:', error);
         showNotification('Failed to load drivers. Please check console.', 'error');
     }
+}
+
+// Load children data from Firebase
+async function loadChildrenData() {
+    console.log('👶 Loading children data from Firebase...');
+
+    const childrenTableBody = document.getElementById('children-table-body');
+    if (!childrenTableBody) return;
+
+    try {
+        const children = await window.FirebaseService.getRegisteredChildren();
+        console.log(`✅ Loaded ${children.length} registered children`);
+
+        if (children.length > 0) {
+            childrenTableBody.innerHTML = '';
+
+            children.forEach(child => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-child-id', child.id);
+
+                // Store child data for modal
+                row.setAttribute('data-child-data', JSON.stringify(child));
+
+                row.innerHTML = `
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                ${(child.childName || 'C').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #1E293B;">${child.childName || 'N/A'}</div>
+                                <div style="font-size: 0.75rem; color: #94A3B8;">${child.childAge || 'N/A'} years old</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${child.parentContact1 || 'N/A'}</td>
+                    <td>${child.childSchool || 'N/A'}</td>
+                    <td>
+                        <span style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                            Grade ${child.childGrade || 'N/A'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-track-child" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="fas fa-map-marker-alt"></i> Track
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn-view-child" style="background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+
+                childrenTableBody.appendChild(row);
+            });
+
+            // Add event listeners for View buttons
+            initializeChildrenButtons();
+
+        } else {
+            childrenTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;"><i class="fas fa-child" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>No registered children found</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading children from Firebase:', error);
+        childrenTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #EF4444;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>Failed to load children data</td></tr>';
+    }
+}
+
+// Initialize children table buttons
+function initializeChildrenButtons() {
+    // View buttons
+    const viewButtons = document.querySelectorAll('.btn-view-child');
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            const childDataStr = row.getAttribute('data-child-data');
+
+            if (childDataStr) {
+                try {
+                    const childData = JSON.parse(childDataStr);
+                    console.log('👀 Viewing child details:', childData);
+                    window.ParentManagement.showChildDetailsModal(childData);
+                } catch (err) {
+                    console.error('Error parsing child data:', err);
+                    showNotification('Failed to load child details', 'error');
+                }
+            }
+        });
+
+        // Add hover effects
+        btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = 'none';
+        });
+    });
+
+    // Track buttons
+    const trackButtons = document.querySelectorAll('.btn-track-child');
+    trackButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showNotification('🚧 Tracking feature coming soon!', 'info');
+        });
+
+        // Add hover effects
+        btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = 'none';
+        });
+    });
 }
 
 // Helper function to calculate time ago
