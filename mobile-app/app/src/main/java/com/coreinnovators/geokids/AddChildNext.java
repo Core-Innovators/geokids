@@ -181,7 +181,7 @@ public class AddChildNext extends AppCompatActivity {
         // Show loading
         showLoading(true);
 
-        // Step 1: Upload image to Supabase
+        // Step 1: Upload image to Supabas
         SupabaseHelper.uploadImage(this, selectedImageUri)
                 .thenAccept(imageUrl -> {
                     // Step 2: Update Firestore with all child data including image URL
