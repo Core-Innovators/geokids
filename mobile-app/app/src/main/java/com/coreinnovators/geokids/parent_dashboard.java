@@ -115,7 +115,7 @@ public class parent_dashboard extends AppCompatActivity {
         supportText.setOnClickListener(v -> {
             Log.d(TAG, "Support text clicked");
             // You can implement support functionality here
-            // For example: open email app, chat support, etc.
+            // For example: open email app, chat support, 
         });
     }
 
