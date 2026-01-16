@@ -5,9 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -18,7 +18,7 @@ public class parent_dashboard extends AppCompatActivity {
 
     // UI Components
     private TextView helloText;
-    private MaterialButton addChildButton;
+    private Button addChildButton;  // Changed from MaterialButton to Button
     private TextView supportText;
 
     // Firebase
@@ -40,7 +40,7 @@ public class parent_dashboard extends AppCompatActivity {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
             // User not logged in, redirect to login
-            Intent intent = new Intent(parent_dashboard.this, AddChild.class);
+            Intent intent = new Intent(parent_dashboard.this, login.class);  // Changed to login.class
             startActivity(intent);
             finish();
             return;

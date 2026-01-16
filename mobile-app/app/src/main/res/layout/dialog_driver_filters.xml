@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_dialog_background"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="Vehicle Filters"
+            android:textColor="@color/dark_blue"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="6dp"
+            android:src="@drawable/close"
+            android:contentDescription="Close" />
+
+    </RelativeLayout>
+
+    <!-- Vehicle Type Filter -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Vehicle Type"
+        android:textColor="@color/dark_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/vehicle_type_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/spinner_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- AC/NON AC Filter -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="AC/NON AC"
+        android:textColor="@color/dark_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/ac_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/spinner_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- Location Filters -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:text="Location Filters"
+        android:textColor="@color/dark_blue"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Pickup Location Filter -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Pick up Location"
+        android:textColor="@color/dark_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/pickup_location_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/spinner_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- Dropoff Location Filter -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Drop off Location"
+        android:textColor="@color/dark_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/dropoff_location_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/spinner_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- School Filters -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:text="School Filters"
+        android:textColor="@color/dark_blue"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- School Name Filter -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="School Name"
+        android:textColor="@color/dark_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/school_name_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/spinner_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- Apply Filters Button -->
+    <Button
+        android:id="@+id/apply_filters_button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/rounded_button_orange"
+        android:text="Apply Filters"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

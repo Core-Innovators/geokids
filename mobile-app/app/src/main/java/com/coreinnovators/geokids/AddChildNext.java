@@ -181,7 +181,7 @@ public class AddChildNext extends AppCompatActivity {
         // Show loading
         showLoading(true);
 
-        // Step 1: Upload image to Supabas
+        // Step 1: Upload image to Supabase
         SupabaseHelper.uploadImage(this, selectedImageUri)
                 .thenAccept(imageUrl -> {
                     // Step 2: Update Firestore with all child data including image URL
@@ -235,8 +235,11 @@ public class AddChildNext extends AppCompatActivity {
                     Toast.makeText(this, "Child profile completed successfully!",
                             Toast.LENGTH_SHORT).show();
 
-                    // Navigate to parent dashboard
-                    Intent intent = new Intent(AddChildNext.this, ParentActiveDashboard.class);
+                    // Navigate to Select Driver Activity
+                    Intent intent = new Intent(AddChildNext.this, SelectDriverActivity.class);
+                    intent.putExtra("child_id", childId);
+                    intent.putExtra("parent_id", parentId);
+                    intent.putExtra("child_school", childSchool);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
