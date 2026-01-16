@@ -19,6 +19,9 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
         <activity
+            android:name=".view_driver_profile"
+            android:exported="false" />
+        <activity
             android:name=".ParentActiveDashboard"
             android:exported="false" />
         <activity
@@ -76,6 +79,9 @@
             android:exported="false" />
         <activity
             android:name=".role_select"
+            android:exported="false" />
+        <activity
+            android:name=".SelectDriverActivity"
             android:exported="false" />
         <activity
             android:name=".signup"

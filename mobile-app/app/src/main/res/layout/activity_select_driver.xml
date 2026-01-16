@@ -1,42 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:background="@color/white">
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select a Driver for your Child"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="30dp" />
-
-    <TextView
-        android:id="@+id/labelSelect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/titleText"
-        android:text="Available Drivers:"
-        android:layout_marginBottom="10dp" />
-
-    <Spinner
-        android:id="@+id/driverSpinner"
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/header_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/labelSelect"
-        android:minHeight="48dp" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select a driver for your child"
+            android:textColor="@color/dark_blue"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/location_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Buttala"
+                android:textColor="@color/dark_blue"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/dark_blue"
+                app:chipStrokeWidth="1dp"
+                app:closeIconEnabled="true"
+                app:closeIconTint="@color/dark_blue" />
+
+            <ImageView
+                android:id="@+id/filter_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_filter"
+                android:contentDescription="Filter" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <!-- Drivers List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/drivers_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/continue_button"
+        android:layout_below="@+id/header_layout"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp" />
+
+    <!-- Continue Button -->
     <Button
-        android:id="@+id/btnConfirm"
+        android:id="@+id/continue_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/driverSpinner"
-        android:layout_marginTop="30dp"
-        android:text="Confirm Selection"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#FFFFFF" />
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="80dp"
+        android:background="@drawable/rounded_button_orange"
+        android:text="Continue"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/orange_primary"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="4">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:src="@drawable/home"
+            android:contentDescription="Home" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:src="@drawable/gps"
+            android:contentDescription="Location" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:src="@drawable/view"
+            android:contentDescription="History" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:src="@drawable/prop"
+            android:contentDescription="Profile" />
+
+    </LinearLayout>
 
 </RelativeLayout>

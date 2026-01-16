@@ -25,6 +25,7 @@
                 android:background="@drawable/rounded_white_card"
                 android:elevation="6dp"
                 android:padding="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -128,8 +129,8 @@
                     android:layout_height="50dp"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/rounded_white_card"
-                    android:hint="Tap button below to select location"
                     android:enabled="false"
+                    android:hint="Tap button below to select location"
                     android:padding="12dp"
                     android:textColor="#161733"
                     android:textColorHint="#999999"
