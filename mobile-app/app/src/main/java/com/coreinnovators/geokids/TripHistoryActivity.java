@@ -23,10 +23,3 @@ public class TripHistoryActivity extends AppCompatActivity {
     }
 }
 
-// Data Model to represent the events from the screenshot
-class TripEvent {
-    String studentName; // e.g., "Kavidu" [1]
-    String time;        // e.g., "07.15 A.M." [1]
-    String location;    // e.g., "School" or "Home" [1]
-    boolean isPickup;   // True for Green Dot, False for Red Dot
-}
