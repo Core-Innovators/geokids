@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Driver {
+
     private String id;
     private String fullName;
     private String address;
@@ -20,9 +21,10 @@ public class Driver {
     private long createdAt;
     private long lastUpdated;
     private long submittedAt;
+    private String vehicleNumber;
     private RouteData routeData;
 
-    // Empty constructor required for Firestore
+    // Required empty constructor for Firestore
     public Driver() {
     }
 
@@ -37,7 +39,7 @@ public class Driver {
         this.createdAt = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+    // ---------- ID ----------
     public String getId() {
         return id;
     }
@@ -46,7 +48,7 @@ public class Driver {
         this.id = id;
     }
 
-    // Alias method for compatibility
+    // Alias for compatibility
     public String getDriverId() {
         return id;
     }
@@ -55,6 +57,7 @@ public class Driver {
         this.id = id;
     }
 
+    // ---------- BASIC INFO ----------
     public String getFullName() {
         return fullName;
     }
@@ -95,6 +98,7 @@ public class Driver {
         this.contactNumber = contactNumber;
     }
 
+    // ---------- IMAGES ----------
     public String getProfileImageUrl() {
         return profileImageUrl;
     }
@@ -127,6 +131,16 @@ public class Driver {
         this.vehicleImageUrls = vehicleImageUrls;
     }
 
+    // ---------- VEHICLE ----------
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public void setVehicleNumber(String vehicleNumber) {
+        this.vehicleNumber = vehicleNumber;
+    }
+
+    // ---------- STATUS ----------
     public String getStatus() {
         return status;
     }
@@ -143,6 +157,7 @@ public class Driver {
         this.rideActive = rideActive;
     }
 
+    // ---------- TIMESTAMPS ----------
     public long getCreatedAt() {
         return createdAt;
     }
@@ -167,6 +182,7 @@ public class Driver {
         this.submittedAt = submittedAt;
     }
 
+    // ---------- ROUTE ----------
     public RouteData getRouteData() {
         return routeData;
     }
@@ -175,7 +191,7 @@ public class Driver {
         this.routeData = routeData;
     }
 
-    // Convert to Map for Firestore
+    // ---------- FIRESTORE MAP ----------
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("fullName", fullName);
@@ -187,11 +203,13 @@ public class Driver {
         map.put("frontLicenseUrl", frontLicenseUrl);
         map.put("backLicenseUrl", backLicenseUrl);
         map.put("vehicleImageUrls", vehicleImageUrls);
+        map.put("vehicleNumber", vehicleNumber); // ✅ FIXED
         map.put("status", status);
         map.put("rideActive", rideActive);
         map.put("createdAt", createdAt);
         map.put("lastUpdated", lastUpdated);
         map.put("submittedAt", submittedAt);
+
         if (routeData != null) {
             map.put("routeData", routeData.toMap());
         }
@@ -203,18 +221,13 @@ public class Driver {
         return "Driver{" +
                 "id='" + id + '\'' +
                 ", fullName='" + fullName + '\'' +
-                ", address='" + address + '\'' +
-                ", nic='" + nic + '\'' +
-                ", birthday='" + birthday + '\'' +
-                ", contactNumber='" + contactNumber + '\'' +
-                ", profileImageUrl='" + profileImageUrl + '\'' +
+                ", vehicleNumber='" + vehicleNumber + '\'' +
                 ", status='" + status + '\'' +
-                ", rideActive=" + rideActive +
-                ", createdAt=" + createdAt +
                 '}';
     }
 
-    // Nested class for RouteData
+    // ================= NESTED CLASSES =================
+
     public static class RouteData {
         private String distance;
         private String duration;
@@ -279,17 +292,12 @@ public class Driver {
             map.put("distance", distance);
             map.put("duration", duration);
             map.put("summary", summary);
-            if (startPoint != null) {
-                map.put("startPoint", startPoint.toMap());
-            }
-            if (endPoint != null) {
-                map.put("endPoint", endPoint.toMap());
-            }
+            if (startPoint != null) map.put("startPoint", startPoint.toMap());
+            if (endPoint != null) map.put("endPoint", endPoint.toMap());
             return map;
         }
     }
 
-    // Nested class for Location Points
     public static class LocationPoint {
         private double lat;
         private double lng;
