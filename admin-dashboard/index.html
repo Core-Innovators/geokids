@@ -261,6 +261,39 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Registered Parents Section -->
+                <div class="content-section" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <h3><i class="fas fa-users" style="color: #3B82F6; margin-right: 0.5rem;"></i>Registered Parents
+                        </h3>
+                        <input type="search" class="search-input" id="search-parents" placeholder="Search parents...">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Parent Name</th>
+                                    <th>Contact Number</th>
+                                    <th>NIC</th>
+                                    <th>Children</th>
+                                    <th>Pickup Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parents-table-body">
+                                <!-- Parents will be loaded from Firebase -->
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;">
+                                        <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
+                                        Loading parents data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- Trips Page -->
@@ -431,7 +464,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
+    <!-- QR Code will be generated using API service -->
+
     <!-- Custom JavaScript -->
+    <script src="js/supabase-config.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/driver-management.js"></script>
     <script src="js/parent-management.js"></script>

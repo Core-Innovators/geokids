@@ -484,6 +484,9 @@ async function loadMockData() {
         // Load children data
         await loadChildrenData();
 
+        // Load parents data
+        await loadParentsData();
+
     } catch (error) {
         console.error('❌ Error loading drivers from Firebase:', error);
         showNotification('Failed to load drivers. Please check console.', 'error');
@@ -502,9 +505,54 @@ async function loadChildrenData() {
         console.log(`✅ Loaded ${children.length} registered children`);
 
         if (children.length > 0) {
+            childrenTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;"><i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Loading parent details...</td></tr>';
+
+            // Fetch parent data for each child in parallel
+            const childrenWithParents = await Promise.all(children.map(async (child) => {
+                // If parentContact1 is missing, try to fetch from parents collection
+                if (!child.parentContact1) {
+                    const parentRef = child.parentId || child.userId || child.parentUserId;
+                    if (parentRef) {
+                        try {
+                            // Try getting parent by document ID first
+                            let parentData = await window.FirebaseService.getParentById(parentRef);
+
+                            // If not found, query by parentId field
+                            if (!parentData) {
+                                const snapshot = await db.collection('parents')
+                                    .where('parentId', '==', parentRef)
+                                    .limit(1)
+                                    .get();
+
+                                if (!snapshot.empty) {
+                                    const doc = snapshot.docs[0];
+                                    parentData = { id: doc.id, ...doc.data() };
+                                }
+                            }
+
+                            if (parentData) {
+                                // Merge parent data into child
+                                child.parentName = parentData.parentName || parentData.fullName || child.parentName;
+                                child.parentContact1 = parentData.parentContact1 || parentData.contactNumber || parentData.phone;
+                                child.parentContact2 = parentData.parentContact2 || parentData.secondaryContact;
+                                child.parentNic = parentData.parentNic || parentData.nic;
+                                // Also get pickup location
+                                child.pickupAddress = child.pickupAddress || parentData.pickupAddress;
+                                if (!child.pickupCoordinates && parentData.pickupCoordinates) {
+                                    child.pickupCoordinates = parentData.pickupCoordinates;
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Could not fetch parent for child:', child.childName, err);
+                        }
+                    }
+                }
+                return child;
+            }));
+
             childrenTableBody.innerHTML = '';
 
-            children.forEach(child => {
+            childrenWithParents.forEach(child => {
                 const row = document.createElement('tr');
                 row.setAttribute('data-child-id', child.id);
 
@@ -523,11 +571,15 @@ async function loadChildrenData() {
                             </div>
                         </div>
                     </td>
-                    <td>${child.parentContact1 || 'N/A'}</td>
+                    <td>
+                        <a href="tel:${child.parentContact1 || ''}" style="color: #3B82F6; text-decoration: none; font-weight: 500;">
+                            ${child.parentContact1 || 'N/A'}
+                        </a>
+                    </td>
                     <td>${child.childSchool || 'N/A'}</td>
                     <td>
                         <span style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
-                            Grade ${child.childGrade || 'N/A'}
+                            ${child.childGrade || 'N/A'}
                         </span>
                     </td>
                     <td>
@@ -600,6 +652,143 @@ function initializeChildrenButtons() {
         btn.addEventListener('mouseenter', () => {
             btn.style.transform = 'translateY(-2px)';
             btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = 'none';
+        });
+    });
+}
+
+// Load parents data from Firebase
+async function loadParentsData() {
+    console.log('👨‍👩‍👧 Loading parents data from Firebase...');
+
+    const parentsTableBody = document.getElementById('parents-table-body');
+    if (!parentsTableBody) return;
+
+    try {
+        // Fetch all parents from Firebase
+        const parentsSnapshot = await db.collection('parents').get();
+        const parents = parentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log(`✅ Loaded ${parents.length} registered parents`);
+
+        // Also fetch all children to count per parent
+        const childrenSnapshot = await db.collection('children').get();
+        const allChildren = childrenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (parents.length > 0) {
+            parentsTableBody.innerHTML = '';
+
+            parents.forEach(parent => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-parent-id', parent.id);
+
+                // Count children for this parent
+                const parentRef = parent.parentId || parent.id;
+                const childrenCount = allChildren.filter(child =>
+                    child.parentId === parentRef ||
+                    child.userId === parentRef ||
+                    child.parentUserId === parentRef
+                ).length;
+
+                // Store parent data for modal
+                row.setAttribute('data-parent-data', JSON.stringify({
+                    ...parent,
+                    childrenCount
+                }));
+
+                // Truncate address if too long
+                const address = parent.pickupAddress || 'Not Set';
+                const truncatedAddress = address.length > 30 ? address.substring(0, 30) + '...' : address;
+
+                row.innerHTML = `
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                ${(parent.parentName || 'P').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #1E293B;">${parent.parentName || 'N/A'}</div>
+                                <div style="font-size: 0.75rem; color: #94A3B8;">Parent</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="tel:${parent.parentContact1 || ''}" style="color: #3B82F6; text-decoration: none; font-weight: 500;">
+                            ${parent.parentContact1 || 'N/A'}
+                        </a>
+                    </td>
+                    <td>${parent.parentNic || 'N/A'}</td>
+                    <td>
+                        <span style="background: ${childrenCount > 0 ? 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)' : '#94A3B8'}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                            ${childrenCount} ${childrenCount === 1 ? 'Child' : 'Children'}
+                        </span>
+                    </td>
+                    <td title="${address}" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${truncatedAddress}
+                    </td>
+                    <td>
+                        <button class="btn-view-parent" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+
+                parentsTableBody.appendChild(row);
+            });
+
+            // Add event listeners for View buttons
+            initializeParentsButtons();
+
+        } else {
+            parentsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94A3B8;"><i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>No registered parents found</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading parents from Firebase:', error);
+        parentsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #EF4444;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>Failed to load parents data</td></tr>';
+    }
+}
+
+// Initialize parents table buttons
+function initializeParentsButtons() {
+    const viewButtons = document.querySelectorAll('.btn-view-parent');
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const row = e.target.closest('tr');
+            const parentDataStr = row.getAttribute('data-parent-data');
+
+            if (parentDataStr) {
+                try {
+                    const parentData = JSON.parse(parentDataStr);
+                    console.log('👀 Viewing parent details:', parentData);
+
+                    // Fetch children for this parent
+                    const parentRef = parentData.parentId || parentData.id;
+                    const childrenSnapshot = await db.collection('children')
+                        .get();
+
+                    const children = childrenSnapshot.docs
+                        .map(doc => ({ id: doc.id, ...doc.data() }))
+                        .filter(child =>
+                            child.parentId === parentRef ||
+                            child.userId === parentRef ||
+                            child.parentUserId === parentRef
+                        );
+
+                    parentData.children = children;
+                    window.ParentManagement.showParentDetailsModal(parentData);
+                } catch (err) {
+                    console.error('Error parsing parent data:', err);
+                    showNotification('Failed to load parent details', 'error');
+                }
+            }
+        });
+
+        // Add hover effects
+        btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
         });
         btn.addEventListener('mouseleave', () => {
             btn.style.transform = 'translateY(0)';

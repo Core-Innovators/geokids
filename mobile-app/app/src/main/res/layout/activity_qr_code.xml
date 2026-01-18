@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    tools:context=".QR_Code">
+
+    <!-- Header with Close Button -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="Driver Selection Success"
+            android:textColor="#0D2D4D"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="Close"
+            android:padding="4dp"
+            android:src="@drawable/close"
+            app:tint="#0D2D4D" />
+    </LinearLayout>
+
+    <!-- Main QR Container -->
+    <LinearLayout
+        android:id="@+id/qr_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header">
+
+        <!-- Child Name -->
+        <TextView
+            android:id="@+id/child_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Child Name"
+            android:textColor="#0D2D4D"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Status Message -->
+        <TextView
+            android:id="@+id/status_message_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="Your request for driver is success. You can now download your child QR code"
+            android:textColor="#666666"
+            android:textSize="16sp" />
+
+        <!-- QR Code Image Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <ImageView
+                android:id="@+id/qr_code_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="QR Code"
+                android:padding="16dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_qr_placeholder" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Download Button -->
+        <Button
+            android:id="@+id/download_button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#ED5316"
+            android:text="Download QR"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Select Child Button (for multiple children) -->
+        <Button
+            android:id="@+id/select_child_button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="#0D2D4D"
+            android:text="Switch Child"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- No QR Container -->
+    <LinearLayout
+        android:id="@+id/no_qr_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="40dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="24dp"
+            android:alpha="0.5"
+            android:contentDescription="No QR Code"
+            android:src="@drawable/ic_qr_placeholder"
+            app:tint="#CCCCCC" />
+
+        <TextView
+            android:id="@+id/no_qr_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="No QR codes available"
+            android:textColor="#666666"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
