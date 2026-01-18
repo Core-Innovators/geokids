@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
+    tools:context=".DriverFormActivity"
     android:background="#FFFFFF">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/card_container"
-        android:layout_width="390dp"
-        android:layout_height="686dp"
+        android:layout_width="389dp"
+        android:layout_height="680dp"
         android:layout_margin="20dp"
         android:background="@drawable/rounded_white_card"
         android:elevation="6dp"
@@ -97,35 +97,36 @@
             android:id="@+id/selecttext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Select Profile Picture"
             android:textSize="16sp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/drivercontact"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/drivercontact" />
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:layout_marginTop="12dp"
-            android:src="@drawable/avatar"
             android:background="@drawable/rounded_white_card"
-            android:padding="5dp"
             android:clickable="true"
             android:focusable="true"
-            app:layout_constraintTop_toBottomOf="@id/selecttext"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:padding="5dp"
+            android:src="@drawable/avatar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/selecttext" />
 
         <Button
             android:id="@+id/add"
             android:layout_width="139dp"
             android:layout_height="42dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:backgroundTint="#ED5316"
             android:text="Next"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.502"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView" />
 

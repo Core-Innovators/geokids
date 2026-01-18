@@ -3,4 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="geo_orange">#EB561C</color>
+    <color name="dark_blue">#1A2B4A</color>
+    <color name="orange_primary">#FF6B35</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="gray">#808080</color>
 </resources>
