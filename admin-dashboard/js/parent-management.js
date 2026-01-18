@@ -425,15 +425,16 @@ function addParentModalStyles() {
 }
 
 // Show child and parent details modal from Firebase data
-function showChildDetailsModal(childData) {
+async function showChildDetailsModal(childData) {
     // Remove existing modal if any
     const existingModal = document.getElementById('child-details-modal');
     if (existingModal) {
         existingModal.remove();
     }
 
-    // Create profile image URL
-    const profileImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(childData.childName || 'Child')}&size=200&background=EC4899&color=fff&bold=true`;
+    // Use actual profile image or generate avatar
+    const profileImage = childData.childProfileImageUrl ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(childData.childName || 'Child')}&size=200&background=EC4899&color=fff&bold=true`;
 
     // Format dates
     const createdDate = childData.createdAt ? new Date(childData.createdAt).toLocaleDateString('en-US', {
@@ -448,9 +449,192 @@ function showChildDetailsModal(childData) {
         day: 'numeric'
     }) : 'N/A';
 
-    // Status badge color
-    const statusColor = childData.status === 'active' ? '#10B981' : '#F59E0B';
-    const statusText = childData.status === 'active' ? 'Active' : 'Pending';
+    // Get driver assignment info
+    const assignedDriver = childData.assignedDriver || {};
+    const driverStatus = assignedDriver.status || childData.status || 'pending';
+    const hasDriver = assignedDriver.driverId && assignedDriver.driverName;
+
+    // Determine status display
+    let statusColor, statusText, statusIcon;
+    switch (driverStatus) {
+        case 'accepted':
+            statusColor = '#10B981';
+            statusText = 'Accepted';
+            statusIcon = 'check-circle';
+            break;
+        case 'assigned':
+            statusColor = '#F59E0B';
+            statusText = 'Assigned (Pending Acceptance)';
+            statusIcon = 'clock';
+            break;
+        case 'rejected':
+            statusColor = '#EF4444';
+            statusText = 'Rejected';
+            statusIcon = 'times-circle';
+            break;
+        default:
+            statusColor = '#94A3B8';
+            statusText = 'Pending Assignment';
+            statusIcon = 'hourglass-half';
+    }
+
+    // Format driver assigned date
+    const assignedDate = assignedDriver.assignedAt ?
+        (assignedDriver.assignedAt.toDate ?
+            assignedDriver.assignedAt.toDate().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) :
+            new Date(assignedDriver.assignedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        ) : 'N/A';
+
+    // Build driver section HTML based on status
+    let driverSectionHTML = '';
+    if (hasDriver) {
+        if (driverStatus === 'accepted') {
+            // Driver accepted - show full details with QR code section
+            driverSectionHTML = `
+                <div class="assignment-status accepted">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-info">
+                        <h5>Driver Confirmed</h5>
+                        <p>This child has been accepted by the driver and transport is confirmed.</p>
+                    </div>
+                </div>
+                
+                <div class="driver-info-card">
+                    <div class="driver-avatar-small">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="driver-details-info">
+                        <h5>${assignedDriver.driverName}</h5>
+                        <p class="driver-id">Driver ID: ${assignedDriver.driverId.substring(0, 8)}...</p>
+                    </div>
+                    <div class="driver-status-badge accepted">
+                        <i class="fas fa-check"></i> Confirmed
+                    </div>
+                </div>
+                
+                <div class="assignment-details">
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-calendar-check"></i> Assigned On:</span>
+                        <span class="detail-value">${assignedDate}</span>
+                    </div>
+                    <div class="detail-row full-width">
+                        <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Pickup Location:</span>
+                        <span class="detail-value ${childData.pickupAddress || childData.pickupCoordinates ? '' : 'pending'}">
+                            ${childData.pickupAddress ? childData.pickupAddress :
+                    (childData.pickupCoordinates ?
+                        `Lat: ${childData.pickupCoordinates.latitude}, Lng: ${childData.pickupCoordinates.longitude}` :
+                        'Not Set')}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- QR Code Section -->
+                <div class="qr-code-section">
+                    <h4><i class="fas fa-qrcode"></i> Child Verification QR Code</h4>
+                    <div class="qr-code-container" id="qr-code-container">
+                        <div class="qr-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading QR Code...</p>
+                        </div>
+                    </div>
+                    <p class="qr-description">Driver can scan this QR code to verify child details during pickup/drop-off</p>
+                </div>
+            `;
+        } else if (driverStatus === 'assigned') {
+            // Driver assigned but not yet accepted
+            driverSectionHTML = `
+                <div class="assignment-status pending">
+                    <div class="status-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="status-info">
+                        <h5>Awaiting Driver Acceptance</h5>
+                        <p>A request has been sent to the driver. Waiting for confirmation.</p>
+                    </div>
+                </div>
+                
+                <div class="driver-info-card pending">
+                    <div class="driver-avatar-small">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="driver-details-info">
+                        <h5>${assignedDriver.driverName}</h5>
+                        <p class="driver-id">Driver ID: ${assignedDriver.driverId.substring(0, 8)}...</p>
+                    </div>
+                    <div class="driver-status-badge pending">
+                        <i class="fas fa-clock"></i> Pending
+                    </div>
+                </div>
+                
+                <div class="assignment-details">
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-calendar-plus"></i> Request Sent:</span>
+                        <span class="detail-value">${assignedDate}</span>
+                    </div>
+                    <div class="detail-row full-width">
+                        <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Pickup Location:</span>
+                        <span class="detail-value ${childData.pickupAddress || childData.pickupCoordinates ? '' : 'pending'}">
+                            ${childData.pickupAddress ? childData.pickupAddress :
+                    (childData.pickupCoordinates ?
+                        `Lat: ${childData.pickupCoordinates.latitude}, Lng: ${childData.pickupCoordinates.longitude}` :
+                        'Not Set')}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="qr-code-section disabled">
+                    <h4><i class="fas fa-qrcode"></i> Child Verification QR Code</h4>
+                    <div class="qr-placeholder">
+                        <i class="fas fa-lock"></i>
+                        <p>QR Code will be generated after driver accepts</p>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        // No driver assigned yet
+        driverSectionHTML = `
+            <div class="assignment-status in-progress">
+                <div class="status-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="status-info">
+                    <h5>No Driver Assigned</h5>
+                    <p>This child has not been assigned to any driver yet. Parent needs to request a driver via the mobile app.</p>
+                </div>
+            </div>
+            
+            <div class="assignment-details">
+                <div class="detail-row full-width">
+                    <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Pickup Location:</span>
+                    <span class="detail-value ${childData.pickupAddress || childData.pickupCoordinates ? '' : 'pending'}">
+                        ${childData.pickupAddress ? childData.pickupAddress :
+                (childData.pickupCoordinates ?
+                    `Lat: ${childData.pickupCoordinates.latitude}, Lng: ${childData.pickupCoordinates.longitude}` :
+                    'Not Set')}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-user-tie"></i> Assigned Driver:</span>
+                    <span class="detail-value pending">Not Assigned</span>
+                </div>
+            </div>
+        `;
+    }
 
     const modal = document.createElement('div');
     modal.id = 'child-details-modal';
@@ -468,15 +652,15 @@ function showChildDetailsModal(childData) {
                 <!-- Child Profile Section -->
                 <div class="child-profile-section">
                     <div class="profile-image-section">
-                        <img src="${profileImage}" alt="Profile" class="child-profile-img">
+                        <img src="${profileImage}" alt="Profile" class="child-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(childData.childName || 'Child')}&size=200&background=EC4899&color=fff&bold=true'">
                         <div class="status-badge-child" style="background: linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%);">
-                            <i class="fas fa-${childData.status === 'active' ? 'check-circle' : 'clock'}"></i> ${statusText}
+                            <i class="fas fa-${statusIcon}"></i> ${statusText}
                         </div>
                     </div>
                     
                     <div class="profile-info-section">
                         <h3>${childData.childName || 'N/A'}</h3>
-                        <p class="child-subtitle"><i class="fas fa-graduation-cap"></i> Grade ${childData.childGrade || 'N/A'} Student</p>
+                        <p class="child-subtitle"><i class="fas fa-graduation-cap"></i> ${childData.childGrade || 'N/A'} Student</p>
                         
                         <div class="info-grid">
                             <div class="info-item">
@@ -534,46 +718,7 @@ function showChildDetailsModal(childData) {
                 <!-- Driver Assignment Section -->
                 <div class="driver-assignment-section">
                     <h4><i class="fas fa-bus"></i> Transport Assignment</h4>
-                    
-                    <div class="assignment-status in-progress">
-                        <div class="status-icon">
-                            <i class="fas fa-hourglass-half"></i>
-                        </div>
-                        <div class="status-info">
-                            <h5>Driver Assignment In Progress</h5>
-                            <p>No driver has been assigned to this child yet. The transport arrangement is currently being processed.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="assignment-details">
-                        <div class="detail-row full-width">
-                            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Pickup Location:</span>
-                            <span class="detail-value ${childData.pickupAddress || childData.pickupCoordinates ? '' : 'pending'}">
-                                ${childData.pickupAddress ? childData.pickupAddress :
-            (childData.pickupCoordinates ?
-                `Lat: ${childData.pickupCoordinates.latitude}, Lng: ${childData.pickupCoordinates.longitude}` :
-                'Not Set')}
-                            </span>
-                        </div>
-                        ${childData.pickupCoordinates ? `
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-map"></i> Latitude:</span>
-                            <span class="detail-value">${childData.pickupCoordinates.latitude || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-map"></i> Longitude:</span>
-                            <span class="detail-value">${childData.pickupCoordinates.longitude || 'N/A'}</span>
-                        </div>
-                        ` : ''}
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-user-tie"></i> Assigned Driver:</span>
-                            <span class="detail-value pending">Pending Assignment</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-car"></i> Vehicle:</span>
-                            <span class="detail-value pending">Pending Assignment</span>
-                        </div>
-                    </div>
+                    ${driverSectionHTML}
                 </div>
                 
                 <!-- Action Buttons -->
@@ -581,12 +726,14 @@ function showChildDetailsModal(childData) {
                     <button class="btn-modal btn-close-child">
                         <i class="fas fa-times"></i> Close
                     </button>
-                    <button class="btn-modal btn-assign-driver">
-                        <i class="fas fa-user-plus"></i> Assign Driver
-                    </button>
                     <button class="btn-modal btn-contact-parent">
                         <i class="fas fa-phone"></i> Contact Parent
                     </button>
+                    ${driverStatus === 'accepted' ? `
+                    <button class="btn-modal btn-download-qr">
+                        <i class="fas fa-download"></i> Download QR
+                    </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -597,6 +744,11 @@ function showChildDetailsModal(childData) {
 
     document.body.appendChild(modal);
 
+    // Load QR code if status is accepted
+    if (driverStatus === 'accepted') {
+        loadChildQRCode(childData);
+    }
+
     // Event handlers
     const closeModal = () => {
         modal.style.animation = 'fadeOut 0.3s ease';
@@ -605,9 +757,7 @@ function showChildDetailsModal(childData) {
 
     modal.querySelector('#close-child-modal').addEventListener('click', closeModal);
     modal.querySelector('.btn-close-child').addEventListener('click', closeModal);
-    modal.querySelector('.btn-assign-driver').addEventListener('click', () => {
-        alert('Driver assignment feature coming soon!');
-    });
+
     modal.querySelector('.btn-contact-parent').addEventListener('click', () => {
         const phone = childData.parentContact1 || childData.parentContact2;
         if (phone) {
@@ -616,9 +766,64 @@ function showChildDetailsModal(childData) {
             alert('No contact number available');
         }
     });
+
+    // Download QR button
+    const downloadBtn = modal.querySelector('.btn-download-qr');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+            const qrImg = modal.querySelector('#child-qr-code');
+            if (qrImg && qrImg.src) {
+                const link = document.createElement('a');
+                link.download = `qr-code-${childData.childName.replace(/\s+/g, '-')}.png`;
+                link.href = qrImg.src;
+                link.click();
+            } else {
+                alert('QR Code is still loading...');
+            }
+        });
+    }
+
     modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('parent-modal-overlay')) closeModal();
     });
+}
+
+// Load and display QR code for a child
+async function loadChildQRCode(childData) {
+    const container = document.getElementById('qr-code-container');
+    if (!container) return;
+
+    try {
+        // Get or generate QR code using QRCodeService
+        const qrCodeUrl = await window.QRCodeService.getOrGenerateChildQRCode(childData);
+
+        if (qrCodeUrl) {
+            container.innerHTML = `
+                <img src="${qrCodeUrl}" alt="Child QR Code" id="child-qr-code" class="qr-code-image" 
+                     onerror="this.parentElement.innerHTML='<div class=\\'qr-error\\'><i class=\\'fas fa-exclamation-triangle\\'></i><p>Failed to load QR image</p></div>'">
+                <div class="qr-info">
+                    <p><strong>${childData.childName}</strong></p>
+                    <p>${childData.childSchool} • ${childData.childGrade}</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="qr-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>QR Code not available</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading QR code:', error);
+        container.innerHTML = `
+            <div class="qr-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load QR Code</p>
+                <p style="font-size: 0.7rem; color: #94A3B8;">${error.message}</p>
+            </div>
+        `;
+    }
 }
 
 // Add child modal styles
@@ -911,6 +1116,234 @@ function addChildModalStyles() {
             color: white;
         }
         
+        .btn-download-qr {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            color: white;
+        }
+        
+        .btn-download-qr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Driver Info Card Styles */
+        .driver-info-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+            border-radius: 0.75rem;
+            border: 1px solid #10B981;
+            margin-bottom: 1rem;
+        }
+        
+        .driver-info-card.pending {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-color: #F59E0B;
+        }
+        
+        .driver-avatar-small {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .driver-info-card.pending .driver-avatar-small {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        
+        .driver-details-info h5 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .driver-id {
+            font-size: 0.75rem;
+            color: #64748B;
+            margin: 0;
+            font-family: monospace;
+        }
+        
+        .driver-status-badge {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .driver-status-badge.accepted {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .driver-status-badge.pending {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+        
+        /* Status Styles */
+        .assignment-status.accepted {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            border: 1px solid #10B981;
+        }
+        
+        .assignment-status.accepted .status-icon {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        
+        .assignment-status.accepted h5 {
+            color: #065F46;
+        }
+        
+        .assignment-status.accepted p {
+            color: #047857;
+        }
+        
+        .assignment-status.pending {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 1px solid #F59E0B;
+        }
+        
+        .assignment-status.pending .status-icon {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        
+        .assignment-status.pending h5 {
+            color: #92400E;
+        }
+        
+        .assignment-status.pending p {
+            color: #A16207;
+        }
+        
+        /* QR Code Section Styles */
+        .qr-code-section {
+            background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            border: 2px solid #8B5CF6;
+        }
+        
+        .qr-code-section h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #5B21B6;
+            margin: 0 0 1rem 0;
+        }
+        
+        .qr-code-section h4 i {
+            margin-right: 0.5rem;
+        }
+        
+        .qr-code-section.disabled {
+            background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+            border-color: #94A3B8;
+        }
+        
+        .qr-code-section.disabled h4 {
+            color: #64748B;
+        }
+        
+        .qr-code-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qr-code-image {
+            width: 200px;
+            height: 200px;
+            display: block;
+            margin: 0 auto 1rem;
+        }
+        
+        .qr-info {
+            text-align: center;
+        }
+        
+        .qr-info p {
+            margin: 0;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+        
+        .qr-info p strong {
+            color: #1E293B;
+            font-size: 1rem;
+        }
+        
+        .qr-loading {
+            padding: 2rem;
+            color: #8B5CF6;
+        }
+        
+        .qr-loading i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-loading p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .qr-error {
+            padding: 2rem;
+            color: #EF4444;
+        }
+        
+        .qr-error i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-error p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .qr-placeholder {
+            padding: 2rem;
+            background: white;
+            border-radius: 0.75rem;
+            color: #94A3B8;
+        }
+        
+        .qr-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-placeholder p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .qr-description {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #7C3AED;
+            font-style: italic;
+        }
+        
         @media (max-width: 768px) {
             .child-profile-section {
                 grid-template-columns: 1fr;
@@ -936,6 +1369,20 @@ function addChildModalStyles() {
             
             .assignment-details {
                 grid-template-columns: 1fr;
+            }
+            
+            .driver-info-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .driver-status-badge {
+                margin-left: 0;
+            }
+            
+            .qr-code-image {
+                width: 150px;
+                height: 150px;
             }
         }
     `;

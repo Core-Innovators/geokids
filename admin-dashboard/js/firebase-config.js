@@ -167,10 +167,18 @@ async function getChildren(parentId) {
 async function getRegisteredChildren() {
     try {
         // Data is stored in 'children' collection with both parent and child info
-        const snapshot = await db.collection('children')
-            .where('status', '==', 'active')
-            .get();
-        const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Fetch ALL children first for debugging, then we can add filter later
+        console.log('🔍 Fetching all children from Firebase...');
+        const snapshot = await db.collection('children').get();
+
+        console.log(`📊 Total documents in children collection: ${snapshot.size}`);
+
+        const records = snapshot.docs.map(doc => {
+            const data = { id: doc.id, ...doc.data() };
+            console.log('👶 Child record:', doc.id, 'Status:', data.status, 'Name:', data.childName);
+            return data;
+        });
+
         return records.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } catch (error) {
         console.error('Error getting registered children:', error);
