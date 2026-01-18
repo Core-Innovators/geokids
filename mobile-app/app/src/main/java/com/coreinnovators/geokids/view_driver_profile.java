@@ -274,9 +274,12 @@ public class view_driver_profile extends AppCompatActivity {
     private void showSuccessAndNavigate() {
         Toast.makeText(this, "Driver assigned successfully!", Toast.LENGTH_LONG).show();
 
-        // Navigate back to parent dashboard
+        // Navigate to active parent dashboard and clear all previous activities
         Intent intent = new Intent(this, ParentActiveDashboard.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Pass necessary data to the dashboard
+        intent.putExtra("parent_id", parentId);
+        intent.putExtra("child_id", childId);
         startActivity(intent);
         finish();
     }
