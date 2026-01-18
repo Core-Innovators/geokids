@@ -22,11 +22,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 public class ParentActiveDashboard extends AppCompatActivity {
 
@@ -40,10 +38,7 @@ public class ParentActiveDashboard extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
     private List<ActivityItem> activityList = new ArrayList<>();
 
-    // Action Buttons
     private LinearLayout trackLocationBtn, tripHistoryBtn, contactDriverBtn;
-
-    // Bottom Navigation
     private LinearLayout navHome, navLocation, navQr, navProfile;
 
     private FirebaseAuth auth;
@@ -57,20 +52,12 @@ public class ParentActiveDashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_active_dashboard);
 
-        // Initialize Firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Initialize views
         initializeViews();
-
-        // Setup RecyclerView
         setupRecyclerView();
-
-        // Load children
         loadChildren();
-
-        // Set up listeners
         setupClickListeners();
     }
 
@@ -84,12 +71,10 @@ public class ParentActiveDashboard extends AppCompatActivity {
         childNameContainer = findViewById(R.id.child_name_container);
         activityRecycler = findViewById(R.id.activity_recycler);
 
-        // Action buttons
         trackLocationBtn = findViewById(R.id.track_location_btn);
         tripHistoryBtn = findViewById(R.id.trip_history_btn);
         contactDriverBtn = findViewById(R.id.contact_driver_btn);
 
-        // Bottom navigation
         navHome = findViewById(R.id.nav_home);
         navLocation = findViewById(R.id.nav_location);
         navQr = findViewById(R.id.nav_qr);
@@ -119,7 +104,7 @@ public class ParentActiveDashboard extends AppCompatActivity {
 
                     if (queryDocumentSnapshots.isEmpty()) {
                         Log.d(TAG, "No children found for this parent");
-                        showNoChildrenState();
+                        navigateToParentDashboard();
                         return;
                     }
 
@@ -134,21 +119,58 @@ public class ParentActiveDashboard extends AppCompatActivity {
                         child.grade = document.getString("childGrade");
                         child.school = document.getString("childSchool");
 
+                        // Check driver assignment status
+                        if (document.contains("assignedDriver")) {
+                            Object assignedDriverObj = document.get("assignedDriver");
+                            if (assignedDriverObj instanceof Map) {
+                                Map<String, Object> assignedDriver = (Map<String, Object>) assignedDriverObj;
+                                String status = (String) assignedDriver.get("status");
+
+                                if ("accepted".equals(status)) {
+                                    child.hasActiveDriver = true;
+                                    child.driverId = (String) assignedDriver.get("driverId");
+                                    child.driverName = (String) assignedDriver.get("driverName");
+                                }
+                            }
+                        }
+
                         childrenList.add(child);
-                        Log.d(TAG, "Child: " + child.name);
+                        Log.d(TAG, "Child: " + child.name + " - Active Driver: " + child.hasActiveDriver);
                     }
 
-                    // Display first child
-                    if (!childrenList.isEmpty()) {
-                        displayChild(0);
-
-                        // Show/hide dropdown based on number of children
-                        if (dropdownIcon != null) {
-                            dropdownIcon.setVisibility(childrenList.size() > 1 ? View.VISIBLE : View.GONE);
+                    // Check if we need to navigate away
+                    boolean hasAtLeastOneActive = false;
+                    for (ChildData child : childrenList) {
+                        if (child.hasActiveDriver) {
+                            hasAtLeastOneActive = true;
+                            break;
                         }
                     }
 
-                    // Load activities for current child
+                    if (!hasAtLeastOneActive) {
+                        // No children with active drivers - navigate to pending dashboard
+                        navigateToParentPendingDashboard();
+                        return;
+                    }
+
+                    // Find first child with active driver and display
+                    for (int i = 0; i < childrenList.size(); i++) {
+                        if (childrenList.get(i).hasActiveDriver) {
+                            displayChild(i);
+                            break;
+                        }
+                    }
+
+                    // Show dropdown only if there are multiple children with active drivers
+                    int activeChildrenCount = 0;
+                    for (ChildData child : childrenList) {
+                        if (child.hasActiveDriver) activeChildrenCount++;
+                    }
+
+                    if (dropdownIcon != null) {
+                        dropdownIcon.setVisibility(activeChildrenCount > 1 ? View.VISIBLE : View.GONE);
+                    }
+
                     loadActivities();
                 })
                 .addOnFailureListener(e -> {
@@ -163,26 +185,22 @@ public class ParentActiveDashboard extends AppCompatActivity {
         currentChildIndex = index;
         ChildData child = childrenList.get(index);
 
-        // Set child name
         if (child.name != null) {
             childNameTv.setText(child.name);
         }
 
-        // Set child grade
         if (child.grade != null) {
             childGradeTv.setText(child.grade);
         } else {
             childGradeTv.setText("");
         }
 
-        // Set child school
         if (child.school != null) {
             childSchoolTv.setText(child.school);
         } else {
             childSchoolTv.setText("");
         }
 
-        // Load child image from Supabase
         if (child.imageUrl != null && !child.imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(child.imageUrl)
@@ -197,16 +215,39 @@ public class ParentActiveDashboard extends AppCompatActivity {
     }
 
     private void showChildSelectionMenu() {
-        if (childrenList.size() <= 1) return;
+        // Filter only children with active drivers
+        List<ChildData> activeChildren = new ArrayList<>();
+        List<Integer> activeIndices = new ArrayList<>();
+
+        for (int i = 0; i < childrenList.size(); i++) {
+            if (childrenList.get(i).hasActiveDriver) {
+                activeChildren.add(childrenList.get(i));
+                activeIndices.add(i);
+            }
+        }
+
+        if (activeChildren.size() <= 1) return;
 
         PopupMenu popupMenu = new PopupMenu(this, childNameContainer);
 
-        for (int i = 0; i < childrenList.size(); i++) {
-            popupMenu.getMenu().add(0, i, i, childrenList.get(i).name);
+        for (int i = 0; i < activeChildren.size(); i++) {
+            popupMenu.getMenu().add(0, i, i, activeChildren.get(i).name);
         }
 
         popupMenu.setOnMenuItemClickListener(item -> {
-            displayChild(item.getItemId());
+            int selectedIndex = activeIndices.get(item.getItemId());
+            ChildData selectedChild = childrenList.get(selectedIndex);
+
+            // Check if selected child still has active driver
+            if (!selectedChild.hasActiveDriver) {
+                Toast.makeText(this, "This child is pending driver assignment",
+                        Toast.LENGTH_SHORT).show();
+                // Reload children to refresh status
+                loadChildren();
+                return true;
+            }
+
+            displayChild(selectedIndex);
             loadActivities();
             return true;
         });
@@ -217,68 +258,83 @@ public class ParentActiveDashboard extends AppCompatActivity {
     private void loadActivities() {
         activityList.clear();
 
-        // Sample activities - replace with real data from Firestore
-        if (!childrenList.isEmpty()) {
-            String childName = childrenList.get(currentChildIndex).name;
-            activityList.add(new ActivityItem("07:15 A.M.", childName + " has been drop off at school"));
-            activityList.add(new ActivityItem("06:45 A.M.", childName + " has been pickup at home"));
-            activityList.add(new ActivityItem("06:30 A.M.", "Driver has started the trip. Get ready!"));
+        if (!childrenList.isEmpty() && currentChildIndex < childrenList.size()) {
+            ChildData currentChild = childrenList.get(currentChildIndex);
+
+            if (currentChild.hasActiveDriver) {
+                String childName = currentChild.name;
+                activityList.add(new ActivityItem("07:15 A.M.",
+                        childName + " has been dropped off at school"));
+                activityList.add(new ActivityItem("06:45 A.M.",
+                        childName + " has been picked up at home"));
+                activityList.add(new ActivityItem("06:30 A.M.",
+                        "Driver has started the trip. Get ready!"));
+            }
         }
 
         activityAdapter.notifyDataSetChanged();
     }
 
-    private void showNoChildrenState() {
-        childNameTv.setText("No Children Added");
-        childGradeTv.setText("");
-        childSchoolTv.setText("Tap below to add your first child");
-        childProfileImage.setImageResource(R.drawable.avatar);
-        if (dropdownIcon != null) {
-            dropdownIcon.setVisibility(View.GONE);
-        }
-    }
-
     private void setupClickListeners() {
-        // Child name dropdown
         childNameContainer.setOnClickListener(v -> showChildSelectionMenu());
 
-        // Action buttons
         trackLocationBtn.setOnClickListener(v -> {
-            Toast.makeText(this, "Track Location", Toast.LENGTH_SHORT).show();
-            // Navigate to tracking map
+            ChildData currentChild = childrenList.get(currentChildIndex);
+            if (currentChild.hasActiveDriver) {
+                Toast.makeText(this, "Tracking " + currentChild.name, Toast.LENGTH_SHORT).show();
+                // Navigate to tracking map
+            } else {
+                Toast.makeText(this, "Driver not assigned yet", Toast.LENGTH_SHORT).show();
+            }
         });
 
         tripHistoryBtn.setOnClickListener(v -> {
             Toast.makeText(this, "Trip History", Toast.LENGTH_SHORT).show();
-            // Navigate to trip history
         });
 
         contactDriverBtn.setOnClickListener(v -> {
-            Toast.makeText(this, "Contact Driver: +94 XX XXX XXXX", Toast.LENGTH_LONG).show();
-            // Open dialer or chat with driver
+            ChildData currentChild = childrenList.get(currentChildIndex);
+            if (currentChild.hasActiveDriver && currentChild.driverName != null) {
+                Toast.makeText(this, "Contact Driver: " + currentChild.driverName,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Driver not assigned yet", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        // Notification bell
         notificationBell.setOnClickListener(v -> {
             Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
         });
 
-        // Bottom Navigation
         navHome.setOnClickListener(v -> {
             Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
         });
 
         navLocation.setOnClickListener(v -> {
-            Toast.makeText(this, "Location tracking coming soon", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Location tracking", Toast.LENGTH_SHORT).show();
         });
 
         navQr.setOnClickListener(v -> {
-            Toast.makeText(this, "QR codes coming soon", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "QR codes", Toast.LENGTH_SHORT).show();
         });
 
         navProfile.setOnClickListener(v -> {
-            Toast.makeText(this, "Profile coming soon", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void navigateToParentDashboard() {
+        Intent intent = new Intent(this, parent_dashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void navigateToParentPendingDashboard() {
+        Intent intent = new Intent(this, ParentPendingDashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -287,7 +343,6 @@ public class ParentActiveDashboard extends AppCompatActivity {
         loadChildren();
     }
 
-    // Inner class to hold child data
     private static class ChildData {
         String id;
         String name;
@@ -295,9 +350,11 @@ public class ParentActiveDashboard extends AppCompatActivity {
         String age;
         String grade;
         String school;
+        boolean hasActiveDriver = false;
+        String driverId;
+        String driverName;
     }
 
-    // Inner class for activity items
     private static class ActivityItem {
         String time;
         String message;
@@ -308,7 +365,6 @@ public class ParentActiveDashboard extends AppCompatActivity {
         }
     }
 
-    // RecyclerView Adapter
     private class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder> {
 
         private List<ActivityItem> activities;

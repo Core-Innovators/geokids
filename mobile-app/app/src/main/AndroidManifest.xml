@@ -25,6 +25,9 @@
             android:name=".ParentActiveDashboard"
             android:exported="false" />
         <activity
+            android:name=".ParentPendingDashboard"
+            android:exported="false" />
+        <activity
             android:name=".LocationPickerActivity"
             android:exported="false" />
         <activity

@@ -13,8 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class login extends AppCompatActivity {
 
@@ -53,7 +56,6 @@ public class login extends AppCompatActivity {
             return;
         }
 
-        // Disable login button during authentication
         loginBtn.setEnabled(false);
         loginBtn.setText("Logging in...");
 
@@ -82,9 +84,8 @@ public class login extends AppCompatActivity {
                         String name = doc.getString("name");
 
                         if ("Parent".equals(role)) {
-                            navigateToParentDashboard();
+                            checkParentChildrenStatusAndNavigate(userId);
                         } else if ("Driver".equals(role)) {
-                            // Check driver status in drivers collection
                             checkDriverStatusAndNavigate(userId, name);
                         } else {
                             loginBtn.setEnabled(true);
@@ -105,6 +106,76 @@ public class login extends AppCompatActivity {
                 });
     }
 
+    private void checkParentChildrenStatusAndNavigate(String parentId) {
+        Log.d(TAG, "Checking parent children status for ID: " + parentId);
+
+        db.collection("children")
+                .whereEqualTo("parentId", parentId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        // No children added - navigate to parent dashboard (add child screen)
+                        Log.d(TAG, "No children found - navigating to parent_dashboard");
+                        navigateToParentDashboard();
+                    } else {
+                        // Parent has children - check their status
+                        List<ChildStatus> childrenStatus = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            ChildStatus childStatus = new ChildStatus();
+                            childStatus.childId = document.getId();
+                            childStatus.childName = document.getString("childName");
+
+                            // Check if child has assignedDriver field
+                            if (document.contains("assignedDriver")) {
+                                Object assignedDriverObj = document.get("assignedDriver");
+                                if (assignedDriverObj instanceof java.util.Map) {
+                                    java.util.Map<String, Object> assignedDriver =
+                                            (java.util.Map<String, Object>) assignedDriverObj;
+                                    String status = (String) assignedDriver.get("status");
+
+                                    if ("accepted".equals(status)) {
+                                        childStatus.hasActiveDriver = true;
+                                    }
+                                }
+                            }
+
+                            childrenStatus.add(childStatus);
+                            Log.d(TAG, "Child: " + childStatus.childName +
+                                    " - Active Driver: " + childStatus.hasActiveDriver);
+                        }
+
+                        // Determine which dashboard to navigate to
+                        boolean hasAtLeastOneActive = false;
+                        boolean hasAtLeastOnePending = false;
+
+                        for (ChildStatus status : childrenStatus) {
+                            if (status.hasActiveDriver) {
+                                hasAtLeastOneActive = true;
+                            } else {
+                                hasAtLeastOnePending = true;
+                            }
+                        }
+
+                        if (hasAtLeastOneActive) {
+                            // At least one child has an active driver
+                            Log.d(TAG, "Parent has active children - navigating to ParentActiveDashboard");
+                            navigateToParentActiveDashboard();
+                        } else {
+                            // All children are pending driver assignment
+                            Log.d(TAG, "All children pending - navigating to ParentPendingDashboard");
+                            navigateToParentPendingDashboard();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    loginBtn.setEnabled(true);
+                    loginBtn.setText("Login");
+                    Log.e(TAG, "Error checking children status: " + e.getMessage());
+                    Toast.makeText(this, "Error loading children data", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void checkDriverStatusAndNavigate(String driverId, String driverName) {
         Log.d(TAG, "Checking driver status for ID: " + driverId);
 
@@ -114,38 +185,28 @@ public class login extends AppCompatActivity {
                     Log.d(TAG, "Driver document exists: " + driverDoc.exists());
 
                     if (driverDoc.exists()) {
-                        // Driver document exists - check status
                         String status = driverDoc.getString("status");
                         String rejectionReason = driverDoc.getString("rejection_reason");
                         Log.d(TAG, "Driver status from Firestore: " + status);
 
-                        // Log all fields for debugging
-                        Log.d(TAG, "All driver data: " + driverDoc.getData());
-
                         if (status == null) {
-                            // Status field doesn't exist - treat as new driver
                             Log.d(TAG, "Status is null - navigating to driver dashboard");
                             navigateToDriverDashboard();
                         } else if ("pending".equalsIgnoreCase(status.trim())) {
-                            // Navigate to pending dashboard
                             Log.d(TAG, "Status is pending - navigating to pending dashboard");
                             navigateToPendingDashboard(driverId, driverName);
                         } else if ("approved".equalsIgnoreCase(status.trim()) ||
                                 "active".equalsIgnoreCase(status.trim())) {
-                            // Navigate to active driver dashboard
                             Log.d(TAG, "Status is approved/active - navigating to active dashboard");
                             navigateToActiveDriverDashboard(driverId, driverName);
                         } else if ("rejected".equalsIgnoreCase(status.trim())) {
-                            // Navigate to rejection screen
                             Log.d(TAG, "Status is rejected - navigating to rejection screen");
                             navigateToRejectionScreen(driverId, driverName, rejectionReason);
                         } else {
-                            // Unknown status - navigate to normal driver dashboard
                             Log.d(TAG, "Unknown status: " + status + " - navigating to driver dashboard");
                             navigateToDriverDashboard();
                         }
                     } else {
-                        // Driver document doesn't exist - first time or hasn't submitted form
                         Log.d(TAG, "Driver document not found - navigating to driver dashboard");
                         navigateToDriverDashboard();
                     }
@@ -166,8 +227,21 @@ public class login extends AppCompatActivity {
         finish();
     }
 
+    private void navigateToParentActiveDashboard() {
+        Intent intent = new Intent(login.this, ParentActiveDashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void navigateToParentPendingDashboard() {
+        Intent intent = new Intent(login.this, ParentPendingDashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
     private void navigateToDriverDashboard() {
-        // Normal driver dashboard (for new drivers who haven't submitted form yet)
         Intent intent = new Intent(login.this, driver_dashboard.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
@@ -184,7 +258,6 @@ public class login extends AppCompatActivity {
     }
 
     private void navigateToActiveDriverDashboard(String driverId, String driverName) {
-        // Active/Approved driver dashboard
         Intent intent = new Intent(login.this, driver_active_dashboard.class);
         intent.putExtra("driver_id", driverId);
         intent.putExtra("driver_name", driverName);
@@ -201,5 +274,12 @@ public class login extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    // Inner class to track child status
+    private static class ChildStatus {
+        String childId;
+        String childName;
+        boolean hasActiveDriver = false;
     }
 }
