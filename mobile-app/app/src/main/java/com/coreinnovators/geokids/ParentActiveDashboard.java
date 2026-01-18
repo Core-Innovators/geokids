@@ -306,20 +306,25 @@ public class ParentActiveDashboard extends AppCompatActivity {
             Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
         });
 
+        // Bottom Navigation
         navHome.setOnClickListener(v -> {
-            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            // Already on home - do nothing or refresh
+            Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show();
         });
 
         navLocation.setOnClickListener(v -> {
-            Toast.makeText(this, "Location tracking", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ParentActiveDashboard.this, ChildHistory.class);
+            startActivity(intent);
         });
 
         navQr.setOnClickListener(v -> {
-            Toast.makeText(this, "QR codes", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ParentActiveDashboard.this, QR_Code.class);
+            startActivity(intent);
         });
 
         navProfile.setOnClickListener(v -> {
-            Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ParentActiveDashboard.this, parent_profile.class);
+            startActivity(intent);
         });
     }
 
