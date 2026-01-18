@@ -287,6 +287,87 @@ async function getDashboardStats() {
     }
 }
 
+// Get parent by ID from 'parents' collection
+async function getParentById(parentId) {
+    try {
+        console.log('🔍 Fetching parent with ID:', parentId);
+        const doc = await db.collection('parents').doc(parentId).get();
+        if (!doc.exists) {
+            console.log('⚠️ Parent document not found with ID:', parentId);
+            return null;
+        }
+        const parentData = { id: doc.id, ...doc.data() };
+        console.log('✅ Parent found:', parentData);
+        return parentData;
+    } catch (error) {
+        console.error('Error getting parent by ID:', error);
+        return null;
+    }
+}
+
+// Get parent by userId (Firebase Auth UID) from 'parents' collection
+async function getParentByUserId(userId) {
+    try {
+        console.log('🔍 Fetching parent with userId:', userId);
+
+        // First try to get by document ID (if userId is the document ID)
+        const docById = await db.collection('parents').doc(userId).get();
+        if (docById.exists) {
+            const parentData = { id: docById.id, ...docById.data() };
+            console.log('✅ Parent found by doc ID:', parentData);
+            return parentData;
+        }
+
+        // Otherwise query by userId field
+        const snapshot = await db.collection('parents')
+            .where('userId', '==', userId)
+            .limit(1)
+            .get();
+
+        if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            const parentData = { id: doc.id, ...doc.data() };
+            console.log('✅ Parent found by userId field:', parentData);
+            return parentData;
+        }
+
+        console.log('⚠️ Parent not found for userId:', userId);
+        return null;
+    } catch (error) {
+        console.error('Error getting parent by userId:', error);
+        return null;
+    }
+}
+
+// Get child with full parent details
+async function getChildWithParentDetails(childId) {
+    try {
+        // Get child data
+        const childData = await getChildById(childId);
+        if (!childData) return null;
+
+        // Get parent data using parentId or userId
+        const parentId = childData.parentId || childData.userId || childData.parentUserId;
+        if (parentId) {
+            const parentData = await getParentByUserId(parentId);
+            if (parentData) {
+                // Merge parent data into child data
+                childData.parentName = parentData.fullName || parentData.name || childData.parentName;
+                childData.parentNic = parentData.nic || parentData.nicNumber || childData.parentNic;
+                childData.parentContact1 = parentData.contactNumber || parentData.phone || parentData.mobile || childData.parentContact1;
+                childData.parentContact2 = parentData.secondaryContact || parentData.altPhone || childData.parentContact2;
+                childData.parentEmail = parentData.email || childData.parentEmail;
+                childData.parentAddress = parentData.address || childData.parentAddress;
+            }
+        }
+
+        return childData;
+    } catch (error) {
+        console.error('Error getting child with parent details:', error);
+        throw error;
+    }
+}
+
 // ===================================
 // Export Functions
 // ===================================
@@ -303,6 +384,9 @@ window.FirebaseService = {
     getChildren,
     getRegisteredChildren,
     getChildById,
+    getParentById,
+    getParentByUserId,
+    getChildWithParentDetails,
     getActiveTrips,
     getTripHistory,
     listenToPendingDrivers,
@@ -312,3 +396,4 @@ window.FirebaseService = {
 
 console.log('📱 Firebase service initialized successfully');
 console.log('✅ Connected to Firebase project:', firebaseConfig.projectId);
+

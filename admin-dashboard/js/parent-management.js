@@ -10,27 +10,21 @@ function showParentDetailsModal(parentData) {
         existingModal.remove();
     }
 
-    // Mock data for children - in production this would come from Firebase
-    const mockChildren = parentData.children || [
-        {
-            name: 'Sarah ' + parentData.name.split(' ')[1],
-            age: 8,
-            grade: 'Grade 3',
-            school: 'St. Mary\'s School',
-            pickupTime: '7:30 AM',
-            dropoffTime: '2:00 PM'
-        },
-        {
-            name: 'Tom ' + parentData.name.split(' ')[1],
-            age: 6,
-            grade: 'Grade 1',
-            school: 'St. Mary\'s School',
-            pickupTime: '7:30 AM',
-            dropoffTime: '2:00 PM'
-        }
-    ];
+    console.log('📋 Showing parent details:', parentData);
 
-    const profileImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(parentData.name)}&size=200&background=3B82F6&color=fff&bold=true`;
+    // Get children from parentData (passed from app.js)
+    const children = parentData.children || [];
+
+    // Format dates
+    const createdAt = parentData.createdAt ?
+        (typeof parentData.createdAt === 'number' ?
+            new Date(parentData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) :
+            (parentData.createdAt.seconds ?
+                new Date(parentData.createdAt.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) :
+                'N/A')
+        ) : 'N/A';
+
+    const profileImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(parentData.parentName || 'Parent')}&size=200&background=3B82F6&color=fff&bold=true`;
 
     const modal = document.createElement('div');
     modal.id = 'parent-details-modal';
@@ -40,7 +34,7 @@ function showParentDetailsModal(parentData) {
         <div class="modal-content-large">
             <!-- Blue Header for Parents -->
             <div class="modal-header-blue">
-                <h2><i class="fas fa-users"></i> Parent & Children Details</h2>
+                <h2><i class="fas fa-users"></i> Parent & Family Details</h2>
                 <button id="close-parent-modal" class="modal-close-btn">&times;</button>
             </div>
             
@@ -50,93 +44,114 @@ function showParentDetailsModal(parentData) {
                     <div class="profile-image-section">
                         <img src="${profileImage}" alt="Profile" class="parent-profile-img">
                         <div class="status-badge-parent">
-                            <i class="fas fa-check-circle"></i> Active
+                            <i class="fas fa-${parentData.status === 'active' ? 'check-circle' : 'clock'}"></i> 
+                            ${parentData.status === 'active' ? 'Active' : 'Pending'}
                         </div>
                     </div>
                     
                     <div class="profile-info-section">
-                        <h3>${parentData.name}</h3>
-                        <p class="parent-subtitle"><i class="fas fa-user-friends"></i> Guardian</p>
+                        <h3>${parentData.parentName || 'N/A'}</h3>
+                        <p class="parent-subtitle"><i class="fas fa-user-friends"></i> Parent/Guardian</p>
                         
                         <div class="contact-grid">
                             <div class="contact-item">
-                                <p class="label"><i class="fas fa-phone"></i> Phone</p>
-                                <p class="value">${parentData.phone}</p>
+                                <p class="label"><i class="fas fa-phone"></i> Primary Contact</p>
+                                <p class="value">
+                                    <a href="tel:${parentData.parentContact1 || ''}" style="color: #3B82F6; text-decoration: none;">
+                                        ${parentData.parentContact1 || 'N/A'}
+                                    </a>
+                                </p>
                             </div>
                             <div class="contact-item">
-                                <p class="label"><i class="fas fa-envelope"></i> Email</p>
-                                <p class="value">${parentData.email}</p>
+                                <p class="label"><i class="fas fa-phone-alt"></i> Secondary Contact</p>
+                                <p class="value">${parentData.parentContact2 || 'N/A'}</p>
                             </div>
                             <div class="contact-item">
-                                <p class="label"><i class="fas fa-calendar"></i> Joined</p>
-                                <p class="value">${parentData.joined || 'Jan 2025'}</p>
+                                <p class="label"><i class="fas fa-id-card"></i> NIC Number</p>
+                                <p class="value">${parentData.parentNic || 'N/A'}</p>
                             </div>
+                            <div class="contact-item">
+                                <p class="label"><i class="fas fa-calendar"></i> Registered On</p>
+                                <p class="value">${createdAt}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pickup Address Section -->
+                <div class="address-section">
+                    <h4><i class="fas fa-map-marker-alt"></i> Pickup Location</h4>
+                    <div class="address-card">
+                        <div class="address-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="address-details">
+                            <p class="address-text">${parentData.pickupAddress || 'Not Set'}</p>
+                            ${parentData.pickupCoordinates ? `
+                                <p class="coordinates">
+                                    <i class="fas fa-map-pin"></i>
+                                    Lat: ${parentData.pickupCoordinates.latitude}, Lng: ${parentData.pickupCoordinates.longitude}
+                                </p>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
                 
                 <!-- Children Section -->
                 <div class="children-section">
-                    <h4><i class="fas fa-child"></i> Registered Children (${mockChildren.length})</h4>
+                    <h4><i class="fas fa-child"></i> Registered Children (${children.length})</h4>
                     
-                    <div class="children-grid">
-                        ${mockChildren.map(child => `
-                            <div class="child-card">
-                                <div class="child-header">
-                                    <div class="child-avatar">
-                                        <i class="fas fa-child"></i>
+                    ${children.length > 0 ? `
+                        <div class="children-grid">
+                            ${children.map(child => {
+        const driverStatus = child.assignedDriver?.status || 'pending';
+        const statusColor = driverStatus === 'accepted' ? '#10B981' :
+            (driverStatus === 'assigned' ? '#F59E0B' : '#94A3B8');
+        const statusText = driverStatus === 'accepted' ? 'Driver Confirmed' :
+            (driverStatus === 'assigned' ? 'Pending Acceptance' : 'No Driver');
+
+        return `
+                                    <div class="child-card">
+                                        <div class="child-header">
+                                            <div class="child-avatar" style="background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);">
+                                                ${(child.childName || 'C').charAt(0).toUpperCase()}
+                                            </div>
+                                            <div class="child-basic-info">
+                                                <h5>${child.childName || 'N/A'}</h5>
+                                                <p class="child-meta">${child.childAge || 'N/A'} years old • ${child.childGrade || 'N/A'}</p>
+                                            </div>
+                                            <div class="child-status-badge" style="background: ${statusColor};">
+                                                ${statusText}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="child-details">
+                                            <div class="child-detail-item">
+                                                <i class="fas fa-school"></i>
+                                                <span>${child.childSchool || 'N/A'}</span>
+                                            </div>
+                                            ${child.assignedDriver?.driverName ? `
+                                                <div class="child-detail-item">
+                                                    <i class="fas fa-user-tie"></i>
+                                                    <span>Driver: ${child.assignedDriver.driverName}</span>
+                                                </div>
+                                            ` : `
+                                                <div class="child-detail-item" style="color: #F59E0B;">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                    <span>No driver assigned</span>
+                                                </div>
+                                            `}
+                                        </div>
                                     </div>
-                                    <div class="child-basic-info">
-                                        <h5>${child.name}</h5>
-                                        <p class="child-meta">${child.age} years old • ${child.grade}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="child-details">
-                                    <div class="child-detail-item">
-                                        <i class="fas fa-school"></i>
-                                        <span>${child.school}</span>
-                                    </div>
-                                    <div class="child-detail-item">
-                                        <i class="fas fa-clock"></i>
-                                        <span>Pickup: ${child.pickupTime}</span>
-                                    </div>
-                                    <div class="child-detail-item">
-                                        <i class="fas fa-clock"></i>
-                                        <span>Drop-off: ${child.dropoffTime}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                <!-- Trip History Summary -->
-                <div class="trip-summary-section">
-                    <h4><i class="fas fa-route"></i> Trip Summary</h4>
-                    <div class="summary-stats">
-                        <div class="stat-box">
-                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-                            <div class="stat-info">
-                                <p class="stat-value">24</p>
-                                <p class="stat-label">Total Trips</p>
-                            </div>
+                                `;
+    }).join('')}
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                            <div class="stat-info">
-                                <p class="stat-value">23</p>
-                                <p class="stat-label">Completed</p>
-                            </div>
+                    ` : `
+                        <div class="no-children-message">
+                            <i class="fas fa-child"></i>
+                            <p>No children registered yet</p>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                            <div class="stat-info">
-                                <p class="stat-value">95%</p>
-                                <p class="stat-label">On-Time Rate</p>
-                            </div>
-                        </div>
-                    </div>
+                    `}
                 </div>
                 
                 <!-- Action Buttons -->
@@ -144,11 +159,8 @@ function showParentDetailsModal(parentData) {
                     <button class="btn-modal btn-close-parent">
                         <i class="fas fa-times"></i> Close
                     </button>
-                    <button class="btn-modal btn-message">
-                        <i class="fas fa-envelope"></i> Send Message
-                    </button>
-                    <button class="btn-modal btn-view-trips">
-                        <i class="fas fa-route"></i> View Trips
+                    <button class="btn-modal btn-call-parent">
+                        <i class="fas fa-phone"></i> Call Parent
                     </button>
                 </div>
             </div>
@@ -168,11 +180,13 @@ function showParentDetailsModal(parentData) {
 
     modal.querySelector('#close-parent-modal').addEventListener('click', closeModal);
     modal.querySelector('.btn-close-parent').addEventListener('click', closeModal);
-    modal.querySelector('.btn-message').addEventListener('click', () => {
-        alert(`Send message to ${parentData.name} at ${parentData.email}`);
-    });
-    modal.querySelector('.btn-view-trips').addEventListener('click', () => {
-        alert('Trip history view coming soon!');
+    modal.querySelector('.btn-call-parent').addEventListener('click', () => {
+        const phone = parentData.parentContact1 || parentData.parentContact2;
+        if (phone) {
+            window.open(`tel:${phone}`, '_self');
+        } else {
+            alert('No phone number available');
+        }
     });
     modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('parent-modal-overlay')) closeModal();
@@ -409,6 +423,107 @@ function addParentModalStyles() {
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
         }
+
+        .btn-call-parent {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-call-parent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Address Section */
+        .address-section {
+            background: linear-gradient(135deg, #F7F9FC 0%, #E5E9F2 100%);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .address-section h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin: 0 0 1rem 0;
+        }
+        
+        .address-section h4 i {
+            color: #EF4444;
+            margin-right: 0.5rem;
+        }
+        
+        .address-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            border-left: 4px solid #EF4444;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .address-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .address-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1E293B;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .coordinates {
+            font-size: 0.75rem;
+            color: #64748B;
+            margin: 0;
+        }
+        
+        .coordinates i {
+            color: #EF4444;
+            margin-right: 0.25rem;
+        }
+        
+        /* Child Status Badge */
+        .child-status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: white;
+            white-space: nowrap;
+        }
+        
+        /* No Children Message */
+        .no-children-message {
+            text-align: center;
+            padding: 3rem;
+            background: #F7F9FC;
+            border-radius: 0.75rem;
+            color: #94A3B8;
+        }
+        
+        .no-children-message i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .no-children-message p {
+            margin: 0;
+            font-size: 1rem;
+        }
         
         @media (max-width: 768px) {
             .parent-profile-section {
@@ -418,6 +533,24 @@ function addParentModalStyles() {
             
             .children-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .address-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .address-icon {
+                margin: 0 auto;
+            }
+            
+            .child-header {
+                flex-wrap: wrap;
+            }
+            
+            .child-status-badge {
+                margin-top: 0.5rem;
+                margin-left: unset;
             }
         }
     `;
@@ -430,6 +563,68 @@ async function showChildDetailsModal(childData) {
     const existingModal = document.getElementById('child-details-modal');
     if (existingModal) {
         existingModal.remove();
+    }
+
+    // Log available fields in childData for debugging
+    console.log('📋 Child data fields:', Object.keys(childData));
+    console.log('📋 Full child data:', childData);
+
+    // Fetch parent details from 'parents' collection if not already present
+    if (!childData.parentNic || !childData.parentContact1) {
+        // Try multiple possible field names for parent reference
+        const parentRef = childData.parentId || childData.userId || childData.parentUserId ||
+            childData.parent_id || childData.user_id || childData.uid;
+
+        console.log('🔍 Looking for parent with reference:', parentRef);
+
+        if (parentRef) {
+            try {
+                let parentData = null;
+
+                // Strategy 1: Try getting parent by document ID
+                parentData = await window.FirebaseService.getParentById(parentRef);
+
+                // Strategy 2: If not found, query by parentId field
+                if (!parentData) {
+                    console.log('🔍 Trying to query by parentId field...');
+                    const snapshot = await db.collection('parents')
+                        .where('parentId', '==', parentRef)
+                        .limit(1)
+                        .get();
+
+                    if (!snapshot.empty) {
+                        const doc = snapshot.docs[0];
+                        parentData = { id: doc.id, ...doc.data() };
+                        console.log('✅ Parent found by parentId field:', parentData);
+                    }
+                }
+
+                if (parentData) {
+                    console.log('✅ Parent data loaded:', parentData);
+                    // Merge parent data into childData (check multiple possible field names)
+                    childData.parentName = parentData.parentName || parentData.fullName || parentData.name || childData.parentName;
+                    childData.parentNic = parentData.parentNic || parentData.nic || parentData.nicNumber || childData.parentNic;
+                    childData.parentContact1 = parentData.parentContact1 || parentData.contactNumber || parentData.phone || parentData.mobile || childData.parentContact1;
+                    childData.parentContact2 = parentData.parentContact2 || parentData.secondaryContact || parentData.alternateContact || childData.parentContact2;
+                    childData.parentEmail = parentData.email || childData.parentEmail;
+                    childData.parentAddress = parentData.pickupAddress || parentData.address || childData.parentAddress;
+
+                    // Also get pickup location from parent data
+                    childData.pickupAddress = childData.pickupAddress || parentData.pickupAddress;
+                    if (!childData.pickupCoordinates && parentData.pickupCoordinates) {
+                        childData.pickupCoordinates = parentData.pickupCoordinates;
+                    }
+                } else {
+                    console.warn('⚠️ Parent not found for reference:', parentRef);
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not fetch parent details:', error);
+            }
+        } else {
+            console.warn('⚠️ No parent reference found in child data');
+        }
+    } else {
+        console.log('✅ Parent data already present in child document');
     }
 
     // Use actual profile image or generate avatar
@@ -478,24 +673,40 @@ async function showChildDetailsModal(childData) {
             statusIcon = 'hourglass-half';
     }
 
-    // Format driver assigned date
-    const assignedDate = assignedDriver.assignedAt ?
-        (assignedDriver.assignedAt.toDate ?
-            assignedDriver.assignedAt.toDate().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) :
-            new Date(assignedDriver.assignedAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            })
-        ) : 'N/A';
+    // Format driver assigned date - handle Firestore timestamp
+    let assignedDate = 'N/A';
+    if (assignedDriver.assignedAt) {
+        try {
+            let dateObj;
+            if (assignedDriver.assignedAt.toDate) {
+                // Firestore Timestamp object with toDate method
+                dateObj = assignedDriver.assignedAt.toDate();
+            } else if (assignedDriver.assignedAt.seconds) {
+                // Firestore timestamp serialized as {seconds, nanoseconds}
+                dateObj = new Date(assignedDriver.assignedAt.seconds * 1000);
+            } else if (typeof assignedDriver.assignedAt === 'number') {
+                // Unix timestamp in milliseconds
+                dateObj = new Date(assignedDriver.assignedAt);
+            } else if (typeof assignedDriver.assignedAt === 'string') {
+                // ISO date string
+                dateObj = new Date(assignedDriver.assignedAt);
+            }
+
+            if (dateObj && !isNaN(dateObj.getTime())) {
+                assignedDate = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        } catch (e) {
+            console.warn('Error parsing assignedAt date:', e);
+            assignedDate = 'N/A';
+        }
+    }
+    console.log('📅 Assigned date parsed:', assignedDate, 'from:', assignedDriver.assignedAt);
 
     // Build driver section HTML based on status
     let driverSectionHTML = '';
