@@ -2,16 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Existing Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- ADD THIS LINE FOR QR CODE DOWNLOAD -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"
         tools:ignore="ScopedStorage" />
+
+    <!-- NEW: Camera Permissions for QR Scanner -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +32,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
+
+        <!-- NEW: Confirm Child Activity -->
+        <activity
+            android:name=".confirm_child"
+            android:exported="false" />
         <activity
             android:name=".ChildHistory"
             android:exported="false" />
@@ -71,9 +85,14 @@
         <activity
             android:name=".driver_map"
             android:exported="false" />
+
+        <!-- UPDATED: QR Scan Activity with proper configuration -->
         <activity
             android:name=".QR_scan"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <activity
             android:name=".driver_profile"
             android:exported="false" />

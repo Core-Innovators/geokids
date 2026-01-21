@@ -6,6 +6,7 @@ import androidx.cardview.widget.CardView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,9 +15,14 @@ import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class driver_active_dashboard extends AppCompatActivity {
@@ -26,6 +32,7 @@ public class driver_active_dashboard extends AppCompatActivity {
     private TextView driverNameTv;
     private ToggleButton toggleButton;
     private ImageView notificationBell;
+    private LinearLayout activityFeedContainer;
 
     // Action Cards
     private CardView availablePickupsCard, viewRequestsCard, contactSupportCard;
@@ -55,6 +62,9 @@ public class driver_active_dashboard extends AppCompatActivity {
         // Load ride status
         loadRideStatus();
 
+        // Load activity feed
+        loadActivityFeed();
+
         // Set up listeners
         setupClickListeners();
     }
@@ -63,6 +73,7 @@ public class driver_active_dashboard extends AppCompatActivity {
         driverNameTv = findViewById(R.id.driver_name);
         toggleButton = findViewById(R.id.toggleButton);
         notificationBell = findViewById(R.id.notification_bell);
+        activityFeedContainer = findViewById(R.id.activity_feed);
 
         // Action cards
         availablePickupsCard = findViewById(R.id.available_pickups_card);
@@ -89,7 +100,6 @@ public class driver_active_dashboard extends AppCompatActivity {
         String uid = auth.getCurrentUser().getUid();
         Log.d(TAG, "Loading name for UID: " + uid);
 
-        // Load from drivers collection instead of users collection
         db.collection("drivers").document(uid)
                 .get()
                 .addOnSuccessListener(snapshot -> {
@@ -97,10 +107,8 @@ public class driver_active_dashboard extends AppCompatActivity {
                     if (snapshot.exists()) {
                         Log.d(TAG, "All document data: " + snapshot.getData());
 
-                        // Try to get fullName field first
                         String name = snapshot.getString("fullName");
 
-                        // If fullName doesn't exist, try other possible field names
                         if (name == null || name.isEmpty()) {
                             name = snapshot.getString("name");
                         }
@@ -147,6 +155,127 @@ public class driver_active_dashboard extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Log.e(TAG, "Error loading ride status: " + e.getMessage())
                 );
+    }
+
+    private void loadActivityFeed() {
+        if (auth.getCurrentUser() == null) {
+            Log.e(TAG, "Cannot load activity feed: User not authenticated");
+            return;
+        }
+
+        String driverId = auth.getCurrentUser().getUid();
+        Log.d(TAG, "Loading activity feed for driver: " + driverId);
+
+        // Clear existing activities
+        activityFeedContainer.removeAllViews();
+
+        // Query pickups, dropoffs, and QR scanned activities
+        loadActivitiesFromCollection("pickups", driverId);
+        loadActivitiesFromCollection("dropoffs", driverId);
+        loadActivitiesFromCollection("activities", driverId);
+    }
+
+    private void loadActivitiesFromCollection(String collectionName, String driverId) {
+        Log.d(TAG, "Querying collection: " + collectionName + " for driver: " + driverId);
+
+        // Query WITHOUT orderBy to avoid index requirement
+        db.collection(collectionName)
+                .whereEqualTo("driverId", driverId)
+                .limit(10)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int docCount = queryDocumentSnapshots.size();
+                    Log.d(TAG, "Found " + docCount + " documents in " + collectionName);
+
+                    if (docCount == 0) {
+                        Log.w(TAG, "No activities found in " + collectionName);
+                    }
+
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Log.d(TAG, "Processing document: " + document.getId() + " from " + collectionName);
+
+                        String childName = document.getString("childName");
+                        String actionType = document.getString("actionType");
+                        Long timestamp = document.getLong("timestamp");
+
+                        Log.d(TAG, "Document data - childName: " + childName +
+                                ", actionType: " + actionType +
+                                ", timestamp: " + timestamp);
+
+                        if (childName != null && actionType != null && timestamp != null) {
+                            addActivityItem(childName, actionType, timestamp);
+                        } else {
+                            Log.w(TAG, "Skipping document with missing data");
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading " + collectionName + ": " + e.getMessage());
+                    e.printStackTrace();
+
+                    // Show error toast with actual error message
+                    runOnUiThread(() -> {
+                        Toast.makeText(this,
+                                collectionName + " error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    });
+                });
+    }
+
+    private void addActivityItem(String childName, String actionType, long timestamp) {
+        // Create activity item layout
+        LinearLayout activityItem = new LinearLayout(this);
+        activityItem.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 0, 0, 48); // 16dp bottom margin
+        activityItem.setLayoutParams(params);
+
+        // Format time
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        String timeString = timeFormat.format(new Date(timestamp));
+
+        // Time TextView
+        TextView timeText = new TextView(this);
+        timeText.setText(timeString);
+        timeText.setTextColor(0xFF999999);
+        timeText.setTextSize(12);
+        activityItem.addView(timeText);
+
+        // Divider
+        android.view.View divider = new android.view.View(this);
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (int) (1 * getResources().getDisplayMetrics().density)
+        );
+        dividerParams.setMargins(0, 12, 0, 12); // 4dp top and bottom margin
+        divider.setLayoutParams(dividerParams);
+        divider.setBackgroundColor(0xFFE0E0E0);
+        activityItem.addView(divider);
+
+        // Activity description TextView
+        TextView descriptionText = new TextView(this);
+        String description;
+
+        if ("pickup".equals(actionType)) {
+            description = childName + " has been picked up";
+        } else if ("dropoff".equals(actionType)) {
+            description = childName + " has been dropped off";
+        } else if ("qr_scanned".equals(actionType)) {
+            description = childName + "'s QR has been scanned";
+        } else {
+            description = childName + "'s activity recorded";
+        }
+
+        descriptionText.setText(description);
+        descriptionText.setTextColor(0xFF0D2D4D);
+        descriptionText.setTextSize(16);
+        activityItem.addView(descriptionText);
+
+        // Add to container at the top
+        activityFeedContainer.addView(activityItem, 0);
     }
 
     private void setupClickListeners() {
@@ -222,5 +351,6 @@ public class driver_active_dashboard extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadRideStatus();
+        loadActivityFeed(); // Reload activity feed when returning to the dashboard
     }
 }
