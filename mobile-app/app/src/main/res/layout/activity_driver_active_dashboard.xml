@@ -269,7 +269,7 @@
 
     </LinearLayout>
 
-    <!-- Activity Feed -->
+    <!-- Activity Feed - FIXED: Removed duplicate ScrollView -->
     <ScrollView
         android:id="@+id/activity_scroll"
         android:layout_width="0dp"
@@ -289,92 +289,8 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp">
 
-            <!-- Activity Item 1 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="07:15 A.M."
-                    android:textColor="#999999"
-                    android:textSize="12sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:background="#E0E0E0" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Kavidu's QR has been scanned"
-                    android:textColor="#0D2D4D"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <!-- Activity Item 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="06:45 A.M."
-                    android:textColor="#999999"
-                    android:textSize="12sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:background="#E0E0E0" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Kavidu has been pickup at home"
-                    android:textColor="#0D2D4D"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <!-- Activity Item 3 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="06:30 A.M."
-                    android:textColor="#999999"
-                    android:textSize="12sp" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:background="#E0E0E0" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nimal has been pickup at home"
-                    android:textColor="#0D2D4D"
-                    android:textSize="16sp" />
-            </LinearLayout>
+            <!-- Activities will be added here dynamically -->
+            <!-- DO NOT add hardcoded activity items here -->
 
         </LinearLayout>
     </ScrollView>
