@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    tools:context=".confirm_child">
+
+    <!-- Main Content Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Close Button -->
+            <ImageView
+                android:id="@+id/close_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="end"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:contentDescription="Close"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Confirm Child Details"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1E293B"
+                android:gravity="center"
+                android:layout_marginTop="8dp"/>
+
+            <!-- Warning Message -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Carefully check all the details are correct before approve!"
+                android:textSize="14sp"
+                android:textColor="#DC2626"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Child Profile Image -->
+            <ImageView
+                android:id="@+id/child_profile_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_profile_placeholder"
+                android:contentDescription="Child Profile"
+                android:scaleType="centerCrop"/>
+
+            <!-- Child Details -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/child_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Name : = Kavidu Lakmal"
+                    android:textSize="16sp"
+                    android:textColor="#1E293B"
+                    android:textStyle="bold"
+                    android:paddingVertical="8dp"/>
+
+                <TextView
+                    android:id="@+id/child_grade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Grade : = 3"
+                    android:textSize="16sp"
+                    android:textColor="#1E293B"
+                    android:textStyle="bold"
+                    android:paddingVertical="8dp"/>
+
+                <TextView
+                    android:id="@+id/child_school"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="School : = Mo/Dutugemunu Collage"
+                    android:textSize="16sp"
+                    android:textColor="#1E293B"
+                    android:textStyle="bold"
+                    android:paddingVertical="8dp"/>
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <Button
+                android:id="@+id/confirm_pickup_btn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Confirm Pickup"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_orange_rounded"
+                android:layout_marginTop="8dp"/>
+
+            <Button
+                android:id="@+id/confirm_dropoff_btn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Confirm Drop off"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_orange_rounded"
+                android:layout_marginTop="12dp"/>
+
+            <Button
+                android:id="@+id/contact_parent_btn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Contact Parent"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_green_rounded"
+                android:layout_marginTop="12dp"/>
+
+            <Button
+                android:id="@+id/contact_admin_btn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Contact Admin"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_green_rounded"
+                android:layout_marginTop="12dp"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

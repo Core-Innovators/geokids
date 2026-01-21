@@ -86,4 +86,23 @@ dependencies {
 
     // CircleImageView for profile images
     implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    // ============================================
+    // NEW DEPENDENCIES FOR QR SCANNER
+    // ============================================
+
+    // CameraX for camera functionality
+    implementation("androidx.camera:camera-core:1.3.1")
+    implementation("androidx.camera:camera-camera2:1.3.1")
+    implementation("androidx.camera:camera-lifecycle:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")
+
+    // ML Kit Barcode Scanning for QR code detection
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
+    // Guava for ListenableFuture (required by CameraX)
+    implementation("com.google.guava:guava:31.1-android")
+
+    // JSON parsing (already available through Android SDK, but explicit version)
+    implementation("org.json:json:20231013")
 }
