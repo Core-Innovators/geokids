@@ -24,13 +24,36 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp">
 
-            <ImageView
-                android:id="@+id/notification_bell"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:contentDescription="Notifications"
-                android:src="@drawable/vector" />
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true">
+
+                <ImageView
+                    android:id="@+id/notification_bell"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Notifications"
+                    android:src="@drawable/vector" />
+
+                <!-- Notification Badge -->
+                <TextView
+                    android:id="@+id/notification_badge"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="-4dp"
+                    android:layout_marginEnd="-4dp"
+                    android:background="@drawable/notification_badge_bg"
+                    android:gravity="center"
+                    android:text="5"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
         </RelativeLayout>
 
         <!-- Child Profile Card -->
@@ -41,8 +64,6 @@
             android:orientation="vertical">
 
             <!-- Child Profile Image -->
-
-            <!-- Child Name with Dropdown -->
             <ImageView
                 android:id="@+id/child_profile_image"
                 android:layout_width="100dp"
@@ -51,6 +72,7 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/avatar" />
 
+            <!-- Child Name with Dropdown -->
             <LinearLayout
                 android:id="@+id/child_name_container"
                 android:layout_width="wrap_content"

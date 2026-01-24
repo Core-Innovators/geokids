@@ -18,11 +18,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +36,9 @@ public class ParentActiveDashboard extends AppCompatActivity {
 
     private ImageView childProfileImage;
     private TextView childNameTv, childGradeTv, childSchoolTv;
-    private ImageView notificationBell, dropdownIcon;
+    private ImageView notificationBell;
+    private TextView notificationBadge;
+    private ImageView dropdownIcon;
     private LinearLayout childNameContainer;
     private RecyclerView activityRecycler;
     private ActivityAdapter activityAdapter;
@@ -57,6 +63,10 @@ public class ParentActiveDashboard extends AppCompatActivity {
 
         initializeViews();
         setupRecyclerView();
+
+        // Initialize FCM and get token
+        initializeFCM();
+
         loadChildren();
         setupClickListeners();
     }
@@ -67,6 +77,7 @@ public class ParentActiveDashboard extends AppCompatActivity {
         childGradeTv = findViewById(R.id.child_grade_tv);
         childSchoolTv = findViewById(R.id.child_school_tv);
         notificationBell = findViewById(R.id.notification_bell);
+        notificationBadge = findViewById(R.id.notification_badge);
         dropdownIcon = findViewById(R.id.dropdown_icon);
         childNameContainer = findViewById(R.id.child_name_container);
         activityRecycler = findViewById(R.id.activity_recycler);
@@ -85,6 +96,69 @@ public class ParentActiveDashboard extends AppCompatActivity {
         activityAdapter = new ActivityAdapter(activityList);
         activityRecycler.setLayoutManager(new LinearLayoutManager(this));
         activityRecycler.setAdapter(activityAdapter);
+    }
+
+    private void initializeFCM() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM token failed", task.getException());
+                            return;
+                        }
+
+                        // Get FCM token
+                        String token = task.getResult();
+                        Log.d(TAG, "FCM Token: " + token);
+
+                        // Save token to Firestore
+                        saveFCMTokenToFirestore(token);
+                    }
+                });
+    }
+
+    private void saveFCMTokenToFirestore(String token) {
+        if (auth.getCurrentUser() == null) return;
+
+        String parentId = auth.getCurrentUser().getUid();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("fcmToken", token);
+        updates.put("tokenUpdatedAt", System.currentTimeMillis());
+
+        // Try to update by document ID first
+        db.collection("parents").document(parentId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "✅ FCM token saved successfully (by doc ID)");
+                })
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Doc not found by ID, trying query by parentId field...");
+                    // Fallback: Query by parentId field
+                    db.collection("parents")
+                            .whereEqualTo("parentId", parentId)
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                if (!querySnapshot.isEmpty()) {
+                                    String docId = querySnapshot.getDocuments().get(0).getId();
+                                    db.collection("parents").document(docId)
+                                            .update(updates)
+                                            .addOnSuccessListener(aVoid2 -> {
+                                                Log.d(TAG, "✅ FCM token saved successfully (by query)");
+                                            })
+                                            .addOnFailureListener(err -> {
+                                                Log.e(TAG, "❌ Failed to save FCM token: " + err.getMessage());
+                                            });
+                                } else {
+                                    Log.w(TAG, "⚠️ Parent document not found for ID: " + parentId);
+                                }
+                            })
+                            .addOnFailureListener(queryError -> {
+                                Log.e(TAG, "❌ Failed to query parent: " + queryError.getMessage());
+                            });
+                });
     }
 
     private void loadChildren() {
@@ -148,7 +222,6 @@ public class ParentActiveDashboard extends AppCompatActivity {
                     }
 
                     if (!hasAtLeastOneActive) {
-                        // No children with active drivers - navigate to pending dashboard
                         navigateToParentPendingDashboard();
                         return;
                     }
@@ -172,10 +245,269 @@ public class ParentActiveDashboard extends AppCompatActivity {
                     }
 
                     loadActivities();
+                    loadUnreadNotificationCount();
+                    
+                    // Start listening for real-time pickup/dropoff notifications
+                    startRealtimeNotificationListeners();
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading children: " + e.getMessage());
                     Toast.makeText(this, "Failed to load children", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    // Real-time listeners for pickup/dropoff notifications
+    private com.google.firebase.firestore.ListenerRegistration pickupListener;
+    private com.google.firebase.firestore.ListenerRegistration dropoffListener;
+    private long lastNotificationTime = 0;
+    private boolean isFirstPickupLoad = true;
+    private boolean isFirstDropoffLoad = true;
+
+    private void startRealtimeNotificationListeners() {
+        if (auth.getCurrentUser() == null) {
+            Log.e(TAG, "❌ Cannot start listeners - no user logged in");
+            return;
+        }
+        
+        String parentId = auth.getCurrentUser().getUid();
+        Log.d(TAG, "🔔 Starting real-time notification listeners for parent: " + parentId);
+        
+        // Reset first load flags
+        isFirstPickupLoad = true;
+        isFirstDropoffLoad = true;
+        
+        // Listen for new pickups
+        pickupListener = db.collection("pickups")
+                .whereEqualTo("parentId", parentId)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.e(TAG, "❌ Pickup listener error: " + e.getMessage());
+                        return;
+                    }
+                    
+                    Log.d(TAG, "📥 Pickup listener triggered. isFirstLoad: " + isFirstPickupLoad);
+                    
+                    if (snapshots != null) {
+                        Log.d(TAG, "📊 Total pickup documents: " + snapshots.size());
+                        
+                        // Skip first load to avoid showing old notifications
+                        if (isFirstPickupLoad) {
+                            isFirstPickupLoad = false;
+                            Log.d(TAG, "⏭️ Skipping first pickup load (existing records)");
+                            return;
+                        }
+                        
+                        for (com.google.firebase.firestore.DocumentChange dc : snapshots.getDocumentChanges()) {
+                            Log.d(TAG, "📝 Document change type: " + dc.getType());
+                            
+                            if (dc.getType() == com.google.firebase.firestore.DocumentChange.Type.ADDED) {
+                                Map<String, Object> data = dc.getDocument().getData();
+                                String childName = (String) data.get("childName");
+                                String childId = (String) data.get("childId");
+                                String driverName = (String) data.get("driverName");
+                                Object timestampObj = data.get("timestamp");
+                                
+                                Log.d(TAG, "🚌 NEW PICKUP DETECTED!");
+                                Log.d(TAG, "   Child: " + childName);
+                                Log.d(TAG, "   Driver: " + driverName);
+                                Log.d(TAG, "   Timestamp: " + timestampObj);
+                                
+                                String title = "🚌 Child Picked Up";
+                                String message = childName + " has been picked up by " + driverName;
+                                
+                                showLocalNotification(title, message, "pickup");
+                                
+                                // Save to notifications collection for history
+                                saveNotificationToFirestore(parentId, childId, childName, driverName, 
+                                        null, "pickup", title, message, timestampObj);
+                                
+                                // Refresh activities
+                                runOnUiThread(() -> {
+                                    loadActivities();
+                                    loadUnreadNotificationCount();
+                                });
+                            }
+                        }
+                    }
+                });
+        
+        // Listen for new dropoffs
+        dropoffListener = db.collection("dropoffs")
+                .whereEqualTo("parentId", parentId)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.e(TAG, "❌ Dropoff listener error: " + e.getMessage());
+                        return;
+                    }
+                    
+                    Log.d(TAG, "📥 Dropoff listener triggered. isFirstLoad: " + isFirstDropoffLoad);
+                    
+                    if (snapshots != null) {
+                        Log.d(TAG, "📊 Total dropoff documents: " + snapshots.size());
+                        
+                        // Skip first load to avoid showing old notifications
+                        if (isFirstDropoffLoad) {
+                            isFirstDropoffLoad = false;
+                            Log.d(TAG, "⏭️ Skipping first dropoff load (existing records)");
+                            return;
+                        }
+                        
+                        for (com.google.firebase.firestore.DocumentChange dc : snapshots.getDocumentChanges()) {
+                            Log.d(TAG, "📝 Document change type: " + dc.getType());
+                            
+                            if (dc.getType() == com.google.firebase.firestore.DocumentChange.Type.ADDED) {
+                                Map<String, Object> data = dc.getDocument().getData();
+                                String childName = (String) data.get("childName");
+                                String childId = (String) data.get("childId");
+                                String driverName = (String) data.get("driverName");
+                                String school = (String) data.get("childSchool");
+                                Object timestampObj = data.get("timestamp");
+                                
+                                Log.d(TAG, "🏫 NEW DROPOFF DETECTED!");
+                                Log.d(TAG, "   Child: " + childName);
+                                Log.d(TAG, "   School: " + school);
+                                Log.d(TAG, "   Timestamp: " + timestampObj);
+                                
+                                String title = "🏫 Child Dropped Off";
+                                String message = childName + " has arrived at " + (school != null ? school : "school");
+                                
+                                showLocalNotification(title, message, "dropoff");
+                                
+                                // Save to notifications collection for history
+                                saveNotificationToFirestore(parentId, childId, childName, driverName, 
+                                        school, "dropoff", title, message, timestampObj);
+                                
+                                // Refresh activities
+                                runOnUiThread(() -> {
+                                    loadActivities();
+                                    loadUnreadNotificationCount();
+                                });
+                            }
+                        }
+                    }
+                });
+    }
+    
+    /**
+     * Save notification to Firestore for history
+     */
+    private void saveNotificationToFirestore(String parentId, String childId, String childName, 
+                                              String driverName, String school, String type, 
+                                              String title, String message, Object timestampObj) {
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("parentId", parentId);
+        notification.put("childId", childId != null ? childId : "");
+        notification.put("childName", childName != null ? childName : "");
+        notification.put("driverName", driverName != null ? driverName : "");
+        if (school != null) {
+            notification.put("childSchool", school);
+        }
+        notification.put("type", type);
+        notification.put("title", title);
+        notification.put("message", message);
+        notification.put("read", false);
+        notification.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
+        
+        // Store original timestamp if available
+        if (timestampObj != null) {
+            notification.put("createdAt", timestampObj);
+        }
+        
+        db.collection("notifications")
+                .add(notification)
+                .addOnSuccessListener(docRef -> {
+                    Log.d(TAG, "✅ Notification saved to Firestore: " + docRef.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "❌ Failed to save notification: " + e.getMessage());
+                });
+    }
+
+    private void showLocalNotification(String title, String message, String type) {
+        // Prevent duplicate notifications (within 5 seconds)
+        if (System.currentTimeMillis() - lastNotificationTime < 5000) {
+            return;
+        }
+        lastNotificationTime = System.currentTimeMillis();
+        
+        android.app.NotificationManager notificationManager =
+                (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        String channelId = "geokids_notifications";
+        
+        // Create notification channel for Android O+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    channelId,
+                    "GeoKids Notifications",
+                    android.app.NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Notifications for child pickup and dropoff");
+            channel.enableVibration(true);
+            notificationManager.createNotificationChannel(channel);
+        }
+        
+        // Intent to open this activity when notification is clicked
+        Intent intent = new Intent(this, ParentActiveDashboard.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("type", type);
+        
+        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
+                this, 0, intent,
+                android.app.PendingIntent.FLAG_ONE_SHOT | android.app.PendingIntent.FLAG_IMMUTABLE
+        );
+        
+        // Build notification
+        androidx.core.app.NotificationCompat.Builder builder =
+                new androidx.core.app.NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setAutoCancel(true)
+                        .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI)
+                        .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                        .setContentIntent(pendingIntent)
+                        .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle().bigText(message));
+        
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+        Log.d(TAG, "✅ Local notification shown: " + title);
+    }
+
+    private void stopRealtimeNotificationListeners() {
+        if (pickupListener != null) {
+            pickupListener.remove();
+            pickupListener = null;
+        }
+        if (dropoffListener != null) {
+            dropoffListener.remove();
+            dropoffListener = null;
+        }
+        Log.d(TAG, "🔕 Real-time notification listeners stopped");
+    }
+
+    private void loadUnreadNotificationCount() {
+        if (auth.getCurrentUser() == null) return;
+
+        String parentId = auth.getCurrentUser().getUid();
+
+        db.collection("notifications")
+                .whereEqualTo("parentId", parentId)
+                .whereEqualTo("read", false)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int unreadCount = queryDocumentSnapshots.size();
+
+                    if (notificationBadge != null) {
+                        if (unreadCount > 0) {
+                            notificationBadge.setVisibility(View.VISIBLE);
+                            notificationBadge.setText(String.valueOf(unreadCount > 99 ? "99+" : unreadCount));
+                        } else {
+                            notificationBadge.setVisibility(View.GONE);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading notification count: " + e.getMessage());
                 });
     }
 
@@ -215,7 +547,6 @@ public class ParentActiveDashboard extends AppCompatActivity {
     }
 
     private void showChildSelectionMenu() {
-        // Filter only children with active drivers
         List<ChildData> activeChildren = new ArrayList<>();
         List<Integer> activeIndices = new ArrayList<>();
 
@@ -238,11 +569,9 @@ public class ParentActiveDashboard extends AppCompatActivity {
             int selectedIndex = activeIndices.get(item.getItemId());
             ChildData selectedChild = childrenList.get(selectedIndex);
 
-            // Check if selected child still has active driver
             if (!selectedChild.hasActiveDriver) {
                 Toast.makeText(this, "This child is pending driver assignment",
                         Toast.LENGTH_SHORT).show();
-                // Reload children to refresh status
                 loadChildren();
                 return true;
             }
@@ -282,7 +611,6 @@ public class ParentActiveDashboard extends AppCompatActivity {
             ChildData currentChild = childrenList.get(currentChildIndex);
             if (currentChild.hasActiveDriver) {
                 Toast.makeText(this, "Tracking " + currentChild.name, Toast.LENGTH_SHORT).show();
-                // Navigate to tracking map
             } else {
                 Toast.makeText(this, "Driver not assigned yet", Toast.LENGTH_SHORT).show();
             }
@@ -303,12 +631,11 @@ public class ParentActiveDashboard extends AppCompatActivity {
         });
 
         notificationBell.setOnClickListener(v -> {
-            Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ParentActiveDashboard.this, NotificationHistory.class);
+            startActivity(intent);
         });
 
-        // Bottom Navigation
         navHome.setOnClickListener(v -> {
-            // Already on home - do nothing or refresh
             Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show();
         });
 
@@ -346,6 +673,14 @@ public class ParentActiveDashboard extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadChildren();
+        loadUnreadNotificationCount();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Stop real-time listeners to prevent memory leaks
+        stopRealtimeNotificationListeners();
     }
 
     private static class ChildData {
