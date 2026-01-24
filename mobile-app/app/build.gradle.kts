@@ -63,6 +63,12 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage")
 
+    // Firebase Cloud Messaging
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
+
+    // For background FCM handling
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
