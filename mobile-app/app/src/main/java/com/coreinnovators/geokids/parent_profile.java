@@ -8,11 +8,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import android.widget.LinearLayout;
 import androidx.appcompat.app.AlertDialog;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class parent_profile extends AppCompatActivity {
 
     private CardView btnAddChild, btnViewQr, btnChooseDriver, btnUpdateLocation,
-            btnUpdateChild, btnInformAbsence, btnContactAdmin, btnDeleteAccount;
+            btnUpdateChild, btnInformAbsence, btnContactAdmin, btnDeleteAccount, btnLogout;
+    private FirebaseAuth auth;
 
     private LinearLayout navHome, navLocation, navQr, navProfile;
 
@@ -20,6 +22,8 @@ public class parent_profile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_profile);
+
+        auth = FirebaseAuth.getInstance();
 
         // Initialize views
         initializeViews();
@@ -39,6 +43,7 @@ public class parent_profile extends AppCompatActivity {
         btnInformAbsence = findViewById(R.id.btn_inform_absence);
         btnContactAdmin = findViewById(R.id.btn_contact_admin);
         btnDeleteAccount = findViewById(R.id.btn_delete_account);
+        btnLogout = findViewById(R.id.btn_logout);
 
         // Bottom navigation
         navHome = findViewById(R.id.nav_home);
@@ -91,6 +96,27 @@ public class parent_profile extends AppCompatActivity {
 
         // Delete Account - Show confirmation dialog
         btnDeleteAccount.setOnClickListener(v -> showDeleteAccountDialog());
+
+        // Logout
+        btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
+    }
+
+    private void showLogoutConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout", (dialog, which) -> performLogout())
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void performLogout() {
+        auth.signOut();
+        Intent intent = new Intent(parent_profile.this, login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void setupBottomNavigationListeners() {
