@@ -610,7 +610,7 @@ public class ParentActiveDashboard extends AppCompatActivity {
         trackLocationBtn.setOnClickListener(v -> {
             ChildData currentChild = childrenList.get(currentChildIndex);
             if (currentChild.hasActiveDriver) {
-                Toast.makeText(this, "Tracking " + currentChild.name, Toast.LENGTH_SHORT).show();
+                openTrackLocationScreen(currentChild);
             } else {
                 Toast.makeText(this, "Driver not assigned yet", Toast.LENGTH_SHORT).show();
             }
@@ -640,8 +640,18 @@ public class ParentActiveDashboard extends AppCompatActivity {
         });
 
         navLocation.setOnClickListener(v -> {
-            Intent intent = new Intent(ParentActiveDashboard.this, ChildHistory.class);
-            startActivity(intent);
+            // Navigate to Track Location screen
+            if (!childrenList.isEmpty()) {
+                ChildData currentChild = childrenList.get(currentChildIndex);
+                if (currentChild.hasActiveDriver) {
+                    openTrackLocationScreen(currentChild);
+                } else {
+                    Toast.makeText(this, "Driver not assigned yet", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Intent intent = new Intent(ParentActiveDashboard.this, TrackLocation.class);
+                startActivity(intent);
+            }
         });
 
         navQr.setOnClickListener(v -> {
@@ -653,6 +663,15 @@ public class ParentActiveDashboard extends AppCompatActivity {
             Intent intent = new Intent(ParentActiveDashboard.this, parent_profile.class);
             startActivity(intent);
         });
+    }
+
+
+    private void openTrackLocationScreen(ChildData child) {
+        Intent intent = new Intent(ParentActiveDashboard.this, TrackLocation.class);
+        intent.putExtra("driverId",   child.driverId);
+        intent.putExtra("driverName", child.driverName);
+        intent.putExtra("childName",  child.name);
+        startActivity(intent);
     }
 
     private void navigateToParentDashboard() {
