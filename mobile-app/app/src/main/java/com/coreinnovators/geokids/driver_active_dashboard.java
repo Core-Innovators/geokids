@@ -2,9 +2,15 @@ package com.coreinnovators.geokids;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
@@ -13,6 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -49,6 +61,12 @@ public class driver_active_dashboard extends AppCompatActivity {
     private boolean isRideActive = false;
     private String activeTripId = null;   // track current trip doc ID
 
+    // ─── GPS Tracking ────────────────────────────────────────────────
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationCallback locationCallback;
+    private boolean isTrackingLocation = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,11 +75,111 @@ public class driver_active_dashboard extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         db   = FirebaseFirestore.getInstance();
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        setupLocationCallback();
+
         initializeViews();
         loadDriverName();
         loadRideStatus();
         loadActivityFeed();
         setupClickListeners();
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    //  GPS TRACKING
+    // ─────────────────────────────────────────────────────────────────
+
+    private void setupLocationCallback() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) return;
+                for (Location location : locationResult.getLocations()) {
+                    writeLocationToFirestore(location.getLatitude(), location.getLongitude());
+                }
+            }
+        };
+    }
+
+    private void startLocationTracking() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Request permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                 Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+            return;
+        }
+
+        LocationRequest locationRequest = new LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY, 5000L)  // 5-second interval
+                .setMinUpdateIntervalMillis(3000L)
+                .build();
+
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper());
+
+        isTrackingLocation = true;
+        Log.d(TAG, "GPS tracking STARTED");
+    }
+
+    private void stopLocationTracking() {
+        if (fusedLocationClient != null && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+        isTrackingLocation = false;
+        clearLocationFromFirestore();
+        Log.d(TAG, "GPS tracking STOPPED");
+    }
+
+    private void writeLocationToFirestore(double latitude, double longitude) {
+        if (auth.getCurrentUser() == null) return;
+        String uid = auth.getCurrentUser().getUid();
+
+        Map<String, Object> locationData = new HashMap<>();
+        locationData.put("latitude",        latitude);
+        locationData.put("longitude",       longitude);
+        locationData.put("locationUpdatedAt", System.currentTimeMillis());
+
+        db.collection("drivers").document(uid)
+                .set(locationData, SetOptions.merge())
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Failed to update location: " + e.getMessage()));
+
+        Log.d(TAG, "Location pushed → lat:" + latitude + " lng:" + longitude);
+    }
+
+    private void clearLocationFromFirestore() {
+        if (auth.getCurrentUser() == null) return;
+        String uid = auth.getCurrentUser().getUid();
+
+        Map<String, Object> clear = new HashMap<>();
+        clear.put("latitude",  null);
+        clear.put("longitude", null);
+
+        db.collection("drivers").document(uid)
+                .set(clear, SetOptions.merge())
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Failed to clear location: " + e.getMessage()));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted — if ride is active, start tracking now
+                if (isRideActive) {
+                    startLocationTracking();
+                }
+            } else {
+                Toast.makeText(this,
+                        "Location permission is required for GPS tracking",
+                        Toast.LENGTH_LONG).show();
+                toggleButton.setChecked(false);
+            }
+        }
     }
 
     private void initializeViews() {
@@ -200,7 +318,9 @@ public class driver_active_dashboard extends AppCompatActivity {
                                 activeTripId = tripId;
                                 isRideActive = true;
                                 updateDriverRideFlag(true);
-                                Toast.makeText(this, "Ride started!", Toast.LENGTH_SHORT).show();
+                                // ✅ Start GPS tracking when ride starts
+                                startLocationTracking();
+                                Toast.makeText(this, "Ride started! GPS tracking ON", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Trip created: " + tripId);
                             })
                             .addOnFailureListener(e -> {
@@ -257,6 +377,8 @@ public class driver_active_dashboard extends AppCompatActivity {
                     Log.d(TAG, "Trip ended: " + activeTripId);
                     activeTripId = null;
                     isRideActive = false;
+                    // ✅ Stop GPS tracking when ride ends
+                    stopLocationTracking();
                     updateDriverRideFlag(false);
                     Toast.makeText(this, "Ride ended", Toast.LENGTH_SHORT).show();
                 })
@@ -406,5 +528,18 @@ public class driver_active_dashboard extends AppCompatActivity {
         super.onResume();
         loadRideStatus();
         loadActivityFeed();
+        // Restart GPS if ride was already active
+        if (isRideActive && !isTrackingLocation) {
+            startLocationTracking();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Only stop UI updates, not Firestore location (ride may still be active)
+        if (fusedLocationClient != null && locationCallback != null && !isRideActive) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
     }
 }
