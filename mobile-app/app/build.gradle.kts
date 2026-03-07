@@ -49,8 +49,10 @@ dependencies {
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // Testing
+    // Testing – JUnit + Mockito
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:5.11.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
@@ -62,6 +64,13 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage")
+
+    // Firebase Cloud Messaging
+
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
+
+    // For background FCM handling
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")

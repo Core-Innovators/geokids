@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Existing Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"
-        tools:ignore="ScopedStorage" />
-
-    <!-- NEW: Camera Permissions for QR Scanner -->
+        tools:ignore="ScopedStorage" /> <!-- NEW: Camera Permissions for QR Scanner -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
+
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
@@ -33,7 +32,9 @@
         android:theme="@style/Theme.GeoKids"
         tools:targetApi="31">
 
-        <!-- NEW: Confirm Child Activity -->
+        <activity
+            android:name=".NotificationHistory"
+            android:exported="false" /> <!-- NEW: Confirm Child Activity -->
         <activity
             android:name=".confirm_child"
             android:exported="false" />
@@ -84,15 +85,12 @@
             android:exported="false" />
         <activity
             android:name=".driver_map"
-            android:exported="false" />
-
-        <!-- UPDATED: QR Scan Activity with proper configuration -->
+            android:exported="false" /> <!-- UPDATED: QR Scan Activity with proper configuration -->
         <activity
             android:name=".QR_scan"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
         <activity
             android:name=".driver_profile"
             android:exported="false" />
@@ -104,6 +102,9 @@
             android:exported="false" />
         <activity
             android:name=".driver_active_dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".TrackLocation"
             android:exported="false" />
         <activity
             android:name=".ChooseMapRouteDialog"
@@ -143,6 +144,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service> <!-- FCM Default Notification Icon -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" /> <!-- FCM Default Notification Color -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/orange" /> <!-- FCM Default Channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="geokids_notifications" />
     </application>
 
 </manifest>

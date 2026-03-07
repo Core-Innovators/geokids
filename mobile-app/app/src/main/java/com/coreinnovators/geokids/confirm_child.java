@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,6 +19,9 @@ import java.util.Map;
 public class confirm_child extends AppCompatActivity {
 
     private static final String TAG = "ConfirmChildActivity";
+    
+    // Note: Push notifications are now handled via real-time Firestore listeners
+    // in the parent app (ParentActiveDashboard.java) instead of FCM API
 
     private ImageView childProfileImage, closeButton;
     private TextView childNameTv, childGradeTv, childSchoolTv;
@@ -169,6 +171,7 @@ public class confirm_child extends AppCompatActivity {
                     actionData.put("createdAt", timestamp);
 
                     // Save to appropriate collection
+                    // Parent app will receive notification via real-time Firestore listener
                     String collectionName = actionType.equals("pickup") ? "pickups" : "dropoffs";
 
                     db.collection(collectionName)
@@ -189,10 +192,13 @@ public class confirm_child extends AppCompatActivity {
                                                     ? "Pickup confirmed successfully!"
                                                     : "Drop-off confirmed successfully!";
                                             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                                            // Parent receives notification via Firestore real-time listener
                                             finish();
                                         })
                                         .addOnFailureListener(e -> {
                                             Log.e(TAG, "Error updating child document: " + e.getMessage());
+                                            // Still finish - parent will get notification via Firestore listener
+                                            finish();
                                         });
                             })
                             .addOnFailureListener(e -> {
@@ -210,6 +216,10 @@ public class confirm_child extends AppCompatActivity {
                     confirmDropOffBtn.setEnabled(true);
                 });
     }
+    
+    // Note: Push notifications are now handled by real-time Firestore listeners
+    // in ParentActiveDashboard.java. When a pickup/dropoff record is created above,
+    // the parent app automatically detects it and shows a local notification.
 
     private void createQRScannedActivity(String driverId, long timestamp) {
         // Create QR scanned activity entry

@@ -29,6 +29,7 @@ public class driver_profile extends AppCompatActivity {
     private CardView btnViewRequests;
     private CardView btnContactAdmin;
     private CardView btnDeleteAccount;
+    private CardView btnLogout;
 
     // Bottom Navigation
     private View navHome;
@@ -71,6 +72,7 @@ public class driver_profile extends AppCompatActivity {
         btnViewRequests = findViewById(R.id.btnViewRequests);
         btnContactAdmin = findViewById(R.id.btnContactAdmin);
         btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
+        btnLogout = findViewById(R.id.btnLogout);
 
         // Bottom navigation
         navHome = findViewById(R.id.nav_home);
@@ -159,6 +161,26 @@ public class driver_profile extends AppCompatActivity {
         btnDeleteAccount.setOnClickListener(v -> {
             showDeleteAccountDialog();
         });
+
+        // Logout
+        btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
+    }
+
+    private void showLogoutConfirmationDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout", (dialog, which) -> performLogout())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void performLogout() {
+        mAuth.signOut();
+        Intent intent = new Intent(driver_profile.this, login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void setupBottomNavigation() {
