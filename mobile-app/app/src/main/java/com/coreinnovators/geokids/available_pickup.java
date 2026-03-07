@@ -28,10 +28,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class available_pickup extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -53,43 +58,84 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
 
     // Data
     private final List<ChildPickupData> pendingChildren = new ArrayList<>();
-    private final Map<String, Marker> childMarkers = new HashMap<>();
+    private final Map<String, Marker>   childMarkers    = new HashMap<>();
+    private final Set<String>           absentChildIds  = new HashSet<>();
     private ListenerRegistration tripListener;
 
     // Currently selected child
     private ChildPickupData selectedChild = null;
+
+    // Today's date key used to query absences
+    private final String todayDateStr =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_available_pickup);
 
-        db = FirebaseFirestore.getInstance();
+        db   = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
         initViews();
         setupMap();
         setupClickListeners();
-        loadAssignedChildren();
+
+        // Step 1: load today's absences first, then load assigned children
+        loadAbsentChildIdsForToday();
     }
 
     private void initViews() {
         childrenListContainer = findViewById(R.id.children_list_container);
-        pendingCountBadge      = findViewById(R.id.pending_count_badge);
-        childDetailCard        = findViewById(R.id.child_detail_card);
-        detailChildAvatar      = findViewById(R.id.detail_child_avatar);
-        closeDetailCard        = findViewById(R.id.close_detail_card);
-        detailChildName        = findViewById(R.id.detail_child_name);
-        detailChildSchool      = findViewById(R.id.detail_child_school);
-        detailChildGrade       = findViewById(R.id.detail_child_grade);
-        detailChildAddress     = findViewById(R.id.detail_child_address);
-        detailChildStatus      = findViewById(R.id.detail_child_status);
-        backButton             = findViewById(R.id.back_button);
+        pendingCountBadge     = findViewById(R.id.pending_count_badge);
+        childDetailCard       = findViewById(R.id.child_detail_card);
+        detailChildAvatar     = findViewById(R.id.detail_child_avatar);
+        closeDetailCard       = findViewById(R.id.close_detail_card);
+        detailChildName       = findViewById(R.id.detail_child_name);
+        detailChildSchool     = findViewById(R.id.detail_child_school);
+        detailChildGrade      = findViewById(R.id.detail_child_grade);
+        detailChildAddress    = findViewById(R.id.detail_child_address);
+        detailChildStatus     = findViewById(R.id.detail_child_status);
+        backButton            = findViewById(R.id.back_button);
 
         navHome     = findViewById(R.id.nav_home);
         navLocation = findViewById(R.id.nav_location);
         navQr       = findViewById(R.id.nav_qr);
         navProfile  = findViewById(R.id.nav_profile);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    //  STEP 1 — Load today's absence records for this driver
+    // ─────────────────────────────────────────────────────────────────
+
+    private void loadAbsentChildIdsForToday() {
+        if (auth.getCurrentUser() == null) return;
+        String driverId = auth.getCurrentUser().getUid();
+
+        db.collection("absence")
+                .whereEqualTo("driverId",    driverId)
+                .whereEqualTo("absenceDate", todayDateStr)   // "yyyy-MM-dd"
+                .whereEqualTo("status",      "active")
+                .get()
+                .addOnSuccessListener(query -> {
+                    absentChildIds.clear();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        String childId = doc.getString("childId");
+                        if (childId != null) {
+                            absentChildIds.add(childId);
+                            Log.d(TAG, "Absent today: " + childId
+                                    + " (" + doc.getString("childName") + ")");
+                        }
+                    }
+                    Log.d(TAG, "Total absent children today: " + absentChildIds.size());
+                    // Step 2: now load assigned children (absence set is ready)
+                    loadAssignedChildren();
+                })
+                .addOnFailureListener(e -> {
+                    // Non-fatal — proceed without absence data rather than blocking the driver
+                    Log.e(TAG, "Failed to load absence data: " + e.getMessage());
+                    loadAssignedChildren();
+                });
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -124,14 +170,13 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
 
         mMap.setOnMapClickListener(latLng -> hideChildDetailCard());
 
-        // If children already loaded before map was ready, add markers now
         if (!pendingChildren.isEmpty()) {
             addMarkersToMap();
         }
     }
 
     // ─────────────────────────────────────────────────────────────────
-    //  DATA LOADING
+    //  STEP 2 — Load assigned children (absence filter already populated)
     // ─────────────────────────────────────────────────────────────────
 
     private void loadAssignedChildren() {
@@ -151,16 +196,32 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
                         return;
                     }
 
-                    fetchChildrenDetails(assignedChildIds, driverId);
+                    // ── Filter out absent children before any further processing ──
+                    List<String> presentChildIds = new ArrayList<>();
+                    for (String id : assignedChildIds) {
+                        if (!absentChildIds.contains(id)) {
+                            presentChildIds.add(id);
+                        } else {
+                            Log.d(TAG, "Skipping absent child: " + id);
+                        }
+                    }
+
+                    if (presentChildIds.isEmpty()) {
+                        runOnUiThread(() -> pendingCountBadge.setText("0 pending"));
+                        return;
+                    }
+
+                    fetchChildrenDetails(presentChildIds, driverId);
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error loading driver: " + e.getMessage()));
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error loading driver: " + e.getMessage()));
     }
 
     private void fetchChildrenDetails(List<String> childIds, String driverId) {
         pendingChildren.clear();
         childrenListContainer.removeAllViews();
 
-        final int total = childIds.size();
+        final int   total         = childIds.size();
         final int[] resolvedCount = {0};
 
         for (String childId : childIds) {
@@ -173,22 +234,22 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
                             return;
                         }
 
-                        ChildPickupData child = parseChild(childDoc);
-                        String parentId = child.parentId;
+                        ChildPickupData child    = parseChild(childDoc);
+                        String          parentId = child.parentId;
 
                         if (parentId == null || parentId.isEmpty()) {
                             checkPickupStatusAndAdd(child, driverId, total, resolvedCount);
                             return;
                         }
 
-                        // Parent docs use auto-generated IDs; query by parentId field instead
                         db.collection("parents")
                                 .whereEqualTo("parentId", parentId)
                                 .limit(1)
                                 .get()
                                 .addOnSuccessListener(parentQuery -> {
                                     if (!parentQuery.isEmpty()) {
-                                        DocumentSnapshot parentDoc = parentQuery.getDocuments().get(0);
+                                        DocumentSnapshot parentDoc =
+                                                parentQuery.getDocuments().get(0);
                                         String addr = parentDoc.getString("pickupAddress");
                                         if (addr != null) child.pickupAddress = addr;
 
@@ -218,34 +279,24 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
-
-
-
     private ChildPickupData parseChild(DocumentSnapshot doc) {
-        ChildPickupData child   = new ChildPickupData();
-        child.childId           = doc.getId();
-        child.childName         = doc.getString("childName");
-        child.childSchool       = doc.getString("childSchool");
-        child.childGrade        = doc.getString("childGrade");
-        child.childProfileImageUrl = doc.getString("childProfileImageUrl");
-        child.parentName        = doc.getString("parentName");
-        child.parentId          = doc.getString("parentId");
-        child.lastAction        = doc.getString("lastAction");
-        // pickupAddress and pickupCoordinates are fetched from the parent document
+        ChildPickupData child        = new ChildPickupData();
+        child.childId                = doc.getId();
+        child.childName              = doc.getString("childName");
+        child.childSchool            = doc.getString("childSchool");
+        child.childGrade             = doc.getString("childGrade");
+        child.childProfileImageUrl   = doc.getString("childProfileImageUrl");
+        child.parentName             = doc.getString("parentName");
+        child.parentId               = doc.getString("parentId");
+        child.lastAction             = doc.getString("lastAction");
         return child;
     }
 
-    /**
-     * Checks if the child is in the active trip's pickedUpChildren array.
-     * Only adds to pendingChildren if NOT picked up.
-     * Uses the shared resolvedCount[] array so finalizeChildrenList() fires
-     * only after every child's async trip-status check has completed.
-     */
     private void checkPickupStatusAndAdd(ChildPickupData child, String driverId,
                                          int total, int[] resolvedCount) {
         db.collection("trips")
                 .whereEqualTo("driverId", driverId)
-                .whereEqualTo("status", "active")
+                .whereEqualTo("status",   "active")
                 .limit(1)
                 .get()
                 .addOnSuccessListener(tripQuery -> {
@@ -269,7 +320,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
                     if (resolvedCount[0] >= total) finalizeChildrenList();
                 })
                 .addOnFailureListener(e -> {
-                    pendingChildren.add(child);   // assume pending on error
+                    pendingChildren.add(child);
                     resolvedCount[0]++;
                     if (resolvedCount[0] >= total) finalizeChildrenList();
                 });
@@ -293,12 +344,26 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
 
         if (pendingChildren.isEmpty()) {
             TextView emptyText = new TextView(this);
-            emptyText.setText("No pending pickups");
+            emptyText.setText(absentChildIds.isEmpty()
+                    ? "No pending pickups"
+                    : "No pending pickups today\n(" + absentChildIds.size()
+                    + " child(ren) marked absent)");
             emptyText.setTextColor(0xFF999999);
             emptyText.setTextSize(15);
             emptyText.setPadding(0, 24, 0, 24);
             childrenListContainer.addView(emptyText);
             return;
+        }
+
+        // Show absent-children notice at the top if any
+        if (!absentChildIds.isEmpty()) {
+            TextView absentBanner = new TextView(this);
+            absentBanner.setText("⚠ " + absentChildIds.size()
+                    + " child(ren) are absent today and not shown.");
+            absentBanner.setTextColor(0xFFBF360C);
+            absentBanner.setTextSize(13);
+            absentBanner.setPadding(0, 8, 0, 16);
+            childrenListContainer.addView(absentBanner);
         }
 
         for (ChildPickupData child : pendingChildren) {
@@ -317,7 +382,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         row.setPadding(0, 20, 0, 20);
 
         TextView nameText = new TextView(this);
-        nameText.setText(child.childName + " needs to be pickup");
+        nameText.setText(child.childName + " needs to be picked up");
         nameText.setTextColor(0xFF0D2D4D);
         nameText.setTextSize(15);
         LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(
@@ -344,7 +409,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         View divider = new View(this);
         LinearLayout.LayoutParams divParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                (int)(1 * getResources().getDisplayMetrics().density));
+                (int) (1 * getResources().getDisplayMetrics().density));
         divider.setBackgroundColor(0xFFE0E0E0);
         divider.setLayoutParams(divParams);
 
@@ -411,10 +476,9 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         selectedChild = child;
         childDetailCard.setVisibility(View.VISIBLE);
 
-        detailChildName.setText(child.childName != null ? child.childName : "Unknown");
-        detailChildSchool.setText(child.childSchool != null
-                ? child.childSchool : "Unknown School");
-        detailChildGrade.setText(child.childGrade != null ? child.childGrade : "");
+        detailChildName.setText(child.childName    != null ? child.childName    : "Unknown");
+        detailChildSchool.setText(child.childSchool != null ? child.childSchool : "Unknown School");
+        detailChildGrade.setText(child.childGrade   != null ? child.childGrade  : "");
         detailChildAddress.setText(child.pickupAddress != null
                 ? child.pickupAddress : "Address not available");
         detailChildStatus.setText("Pending Pickup");
@@ -436,7 +500,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
     }
 
     // ─────────────────────────────────────────────────────────────────
-    //  REAL-TIME TRIP LISTENER  (reacts to QR scans)
+    //  REAL-TIME TRIP LISTENER
     // ─────────────────────────────────────────────────────────────────
 
     private void listenToActiveTripChanges() {
@@ -447,12 +511,12 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
 
         tripListener = db.collection("trips")
                 .whereEqualTo("driverId", driverId)
-                .whereEqualTo("status", "active")
+                .whereEqualTo("status",   "active")
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null || snapshots == null || snapshots.isEmpty()) return;
 
-                    DocumentSnapshot tripDoc = snapshots.getDocuments().get(0);
-                    List<String> pickedUpIds =
+                    DocumentSnapshot tripDoc    = snapshots.getDocuments().get(0);
+                    List<String>     pickedUpIds =
                             (List<String>) tripDoc.get("pickedUpChildren");
                     if (pickedUpIds == null) return;
 
@@ -487,7 +551,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
     // ─────────────────────────────────────────────────────────────────
 
     private void setupClickListeners() {
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v    -> finish());
         closeDetailCard.setOnClickListener(v -> hideChildDetailCard());
 
         navHome.setOnClickListener(v -> {
