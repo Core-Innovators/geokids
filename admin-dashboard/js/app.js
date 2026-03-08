@@ -487,9 +487,145 @@ async function loadMockData() {
         // Load parents data
         await loadParentsData();
 
+        // Load trip data
+        if (window.TripManagement) {
+            await window.TripManagement.init();
+        }
+
+        // Update Global Stats (Dashboard & Reports)
+        try {
+            const stats = await window.FirebaseService.getDashboardStats();
+            console.log('✅ Global stats loaded:', stats);
+
+            // Update Reports Page stats
+            const reportStats = document.querySelectorAll('#page-reports .stat-number');
+            if (reportStats.length >= 4) {
+                reportStats[0].textContent = stats.totalDrivers || 0;
+                reportStats[1].textContent = stats.totalParents || 0;
+                reportStats[2].textContent = stats.totalChildren || 0;
+                reportStats[3].textContent = (stats.totalTrips || 0).toLocaleString();
+            }
+
+            // Update Performance Analytics cards
+            const totalRidesEl = document.getElementById('report-total-rides');
+            const avgDurationEl = document.getElementById('report-avg-duration');
+            const totalPickupsEl = document.getElementById('report-total-pickups');
+
+            if (totalRidesEl) totalRidesEl.textContent = `${stats.totalTrips || 0} rides`;
+            if (avgDurationEl) avgDurationEl.textContent = `${stats.avgDuration || 0} mins`;
+            if (totalPickupsEl) totalPickupsEl.textContent = `${stats.totalStudentPickups || 0} pickups`;
+
+            // Make Student Pickups Clickable
+            const pickupsCard = document.getElementById('btn-show-pickups');
+            if (pickupsCard) {
+                pickupsCard.addEventListener('click', showPickupsByDriverModal);
+
+                // Add hover style
+                pickupsCard.addEventListener('mouseenter', () => {
+                    pickupsCard.style.background = '#F8FAFC';
+                    pickupsCard.style.transform = 'translateY(-2px)';
+                });
+                pickupsCard.addEventListener('mouseleave', () => {
+                    pickupsCard.style.background = 'white';
+                    pickupsCard.style.transform = 'translateY(0)';
+                });
+            }
+
+        } catch (err) {
+            console.warn('Could not update report stats:', err);
+        }
+
     } catch (error) {
         console.error('❌ Error loading drivers from Firebase:', error);
         showNotification('Failed to load drivers. Please check console.', 'error');
+    }
+}
+
+/**
+ * Shows a modal with student pickup records grouped by driver
+ */
+async function showPickupsByDriverModal() {
+    showNotification('🔍 Loading pickup records...', 'info');
+
+    try {
+        const [allPickups, activeDrivers] = await Promise.all([
+            window.FirebaseService.getAllPickups(),
+            window.FirebaseService.getActiveDrivers()
+        ]);
+
+        // Group pickups by driverId
+        const pickupsByDriver = {};
+        allPickups.forEach(pickup => {
+            const dId = pickup.driverId || 'unknown';
+            if (!pickupsByDriver[dId]) pickupsByDriver[dId] = [];
+            pickupsByDriver[dId].push(pickup);
+        });
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'driver-modal-overlay';
+        modal.id = 'pickups-modal';
+
+        let driverPickupsHtml = '';
+
+        activeDrivers.forEach(driver => {
+            const driverPickups = pickupsByDriver[driver.id] || [];
+            if (driverPickups.length > 0) {
+                driverPickupsHtml += `
+                    <div style="margin-bottom: 1.5rem; border: 1px solid #E2E8F0; border-radius: 0.75rem; overflow: hidden;">
+                        <div style="background: #F8FAFC; padding: 1rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin: 0; color: #1E293B;"><i class="fas fa-user-tie" style="margin-right: 0.5rem; color: #3B82F6;"></i> ${driver.fullName || driver.name}</h4>
+                            <span style="background: #3B82F6; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                                ${driverPickups.length} Pickups
+                            </span>
+                        </div>
+                        <div style="padding: 1rem;">
+                            <table style="width: 100%; font-size: 0.875rem; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="text-align: left; color: #64748B;">
+                                        <th style="padding: 0.5rem;">Child ID</th>
+                                        <th style="padding: 0.5rem;">Time</th>
+                                        <th style="padding: 0.5rem;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${driverPickups.map(p => `
+                                        <tr style="border-top: 1px solid #F1F5F9;">
+                                            <td style="padding: 0.5rem; font-weight: 500;">${p.childId ? p.childId.substring(0, 10) + '...' : 'N/A'}</td>
+                                            <td style="padding: 0.5rem;">${p.timestamp ? new Date(p.timestamp).toLocaleTimeString() : 'Unknown'}</td>
+                                            <td style="padding: 0.5rem;"><span style="color: #10B981;"><i class="fas fa-check-circle"></i> ${p.status || 'Verified'}</span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        if (!driverPickupsHtml) {
+            driverPickupsHtml = '<div style="text-align: center; padding: 3rem; color: #94A3B8;"><i class="fas fa-user-slash" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>No pickup records found for active drivers.</div>';
+        }
+
+        modal.innerHTML = `
+            <div class="modal-content-medium" style="max-height: 85vh; overflow-y: auto;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;">
+                    <h2 style="margin: 0;"><i class="fas fa-user-check"></i> Driver Pickup Records</h2>
+                    <button onclick="this.closest('.driver-modal-overlay').remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1.25rem;">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem;">
+                    <p style="color: #64748B; margin-bottom: 2rem;">Overview of student pickups handled by each driver for the current period.</p>
+                    ${driverPickupsHtml}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+    } catch (error) {
+        console.error('Error loading pickups detail:', error);
+        showNotification('Failed to load pickup details', 'error');
     }
 }
 

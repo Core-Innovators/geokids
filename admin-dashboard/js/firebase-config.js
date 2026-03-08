@@ -203,31 +203,52 @@ async function getChildById(childId) {
 // Firestore Operations for Trips
 async function getActiveTrips() {
     try {
-        // const snapshot = await db.collection('trips')
-        //     .where('status', '==', 'active')
-        //     .orderBy('startedAt', 'desc')
-        //     .get();
-        // return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('🔍 Fetching active trips from Firebase...');
+        const snapshot = await db.collection('trips')
+            .where('status', '==', 'active')
+            .get();
 
-        console.log('Get active trips - waiting for Firebase config');
-        return [];
+        const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log(`✅ Loaded ${trips.length} active trips`);
+        return trips.sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
     } catch (error) {
         console.error('Error getting active trips:', error);
         throw error;
     }
 }
 
+async function getCompletedTrips() {
+    try {
+        console.log('🔍 Fetching completed trips from Firebase...');
+        const snapshot = await db.collection('trips')
+            .where('status', '==', 'completed')
+            .limit(50) // Limit to last 50 completed trips
+            .get();
+
+        const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log(`✅ Loaded ${trips.length} completed trips`);
+        return trips.sort((a, b) => (b.endTime || 0) - (a.endTime || 0));
+    } catch (error) {
+        console.error('Error getting completed trips:', error);
+        throw error;
+    }
+}
+
 async function getTripHistory(startDate, endDate) {
     try {
-        // const snapshot = await db.collection('trips')
-        //     .where('completedAt', '>=', startDate)
-        //     .where('completedAt', '<=', endDate)
-        //     .orderBy('completedAt', 'desc')
-        //     .get();
-        // return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('🔍 Fetching trip history from Firebase...');
+        let query = db.collection('trips').where('status', '==', 'completed');
 
-        console.log('Get trip history - waiting for Firebase config');
-        return [];
+        if (startDate) {
+            query = query.where('endTime', '>=', startDate);
+        }
+        if (endDate) {
+            query = query.where('endTime', '<=', endDate);
+        }
+
+        const snapshot = await query.get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (b.endTime || 0) - (a.endTime || 0));
     } catch (error) {
         console.error('Error getting trip history:', error);
         throw error;
@@ -260,29 +281,63 @@ function listenToActiveTrips(callback) {
 // Statistics
 async function getDashboardStats() {
     try {
-        // const [drivers, parents, children, trips] = await Promise.all([
-        //     db.collection('drivers').where('status', '==', 'approved').get(),
-        //     db.collection('parents').get(),
-        //     db.collection('children').get(),
-        //     db.collection('trips').where('status', '==', 'completed').get()
-        // ]);
+        const [drivers, children, parents, activeTrips, completedTrips, pickups] = await Promise.all([
+            db.collection('drivers').where('status', '==', 'approved').get(),
+            db.collection('children').get(),
+            db.collection('parents').get(),
+            db.collection('trips').where('status', '==', 'active').get(),
+            db.collection('trips').where('status', '==', 'completed').get(),
+            db.collection('pickups').get().catch(() => ({ size: 0, docs: [] })) // In case collection doesn't exist yet
+        ]);
 
-        // return {
-        //     totalDrivers: drivers.size,
-        //     totalParents: parents.size,
-        //     totalChildren: children.size,
-        //     totalTrips: trips.size
-        // };
+        // Calculate Average Duration
+        let totalDuration = 0;
+        let tripsWithDuration = 0;
+        completedTrips.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.startTime && data.endTime) {
+                const duration = (data.endTime - data.startTime) / 60000; // minutes
+                if (duration > 0 && duration < 600) { // filter outliers
+                    totalDuration += duration;
+                    tripsWithDuration++;
+                }
+            }
+        });
 
-        console.log('Get dashboard stats - waiting for Firebase config');
+        const avgDuration = tripsWithDuration > 0 ? Math.round(totalDuration / tripsWithDuration) : 0;
+
         return {
-            totalDrivers: 24,
-            totalParents: 156,
-            totalChildren: 243,
-            totalTrips: 1234
+            totalDrivers: drivers.size,
+            totalParents: parents.size,
+            totalChildren: children.size,
+            totalTrips: completedTrips.size + activeTrips.size,
+            activeTripsCount: activeTrips.size,
+            completedToday: completedTrips.size,
+            avgDuration: avgDuration,
+            totalStudentPickups: pickups.size
         };
     } catch (error) {
         console.error('Error getting dashboard stats:', error);
+        return {
+            totalDrivers: 0,
+            totalParents: 0,
+            totalChildren: 0,
+            totalTrips: 0,
+            activeTripsCount: 0,
+            completedToday: 0,
+            avgDuration: 0,
+            totalStudentPickups: 0
+        };
+    }
+}
+
+async function getAllPickups() {
+    try {
+        console.log('🔍 Fetching all pickups from Firebase...');
+        const snapshot = await db.collection('pickups').get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error('Error getting pickups:', error);
         throw error;
     }
 }
@@ -388,7 +443,9 @@ window.FirebaseService = {
     getParentByUserId,
     getChildWithParentDetails,
     getActiveTrips,
+    getCompletedTrips,
     getTripHistory,
+    getAllPickups,
     listenToPendingDrivers,
     listenToActiveTrips,
     getDashboardStats
