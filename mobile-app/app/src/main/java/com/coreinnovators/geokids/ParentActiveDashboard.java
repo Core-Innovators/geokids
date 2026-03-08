@@ -617,7 +617,15 @@ public class ParentActiveDashboard extends AppCompatActivity {
         });
 
         tripHistoryBtn.setOnClickListener(v -> {
-            Toast.makeText(this, "Trip History", Toast.LENGTH_SHORT).show();
+            if (!childrenList.isEmpty() && currentChildIndex < childrenList.size()) {
+                ChildData currentChild = childrenList.get(currentChildIndex);
+                Intent histIntent = new Intent(ParentActiveDashboard.this, ChildHistory.class);
+                histIntent.putExtra("childId", currentChild.id);
+                histIntent.putExtra("childName", currentChild.name);
+                startActivity(histIntent);
+            } else {
+                startActivity(new Intent(ParentActiveDashboard.this, ChildHistory.class));
+            }
         });
 
         contactDriverBtn.setOnClickListener(v -> {
@@ -636,7 +644,7 @@ public class ParentActiveDashboard extends AppCompatActivity {
         });
 
         navHome.setOnClickListener(v -> {
-            Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show();
+            // Already on home
         });
 
         navLocation.setOnClickListener(v -> {
@@ -655,8 +663,15 @@ public class ParentActiveDashboard extends AppCompatActivity {
         });
 
         navQr.setOnClickListener(v -> {
-            Intent intent = new Intent(ParentActiveDashboard.this, QR_Code.class);
-            startActivity(intent);
+            if (!childrenList.isEmpty() && currentChildIndex < childrenList.size()) {
+                ChildData currentChild = childrenList.get(currentChildIndex);
+                Intent histIntent = new Intent(ParentActiveDashboard.this, ChildHistory.class);
+                histIntent.putExtra("childId", currentChild.id);
+                histIntent.putExtra("childName", currentChild.name);
+                startActivity(histIntent);
+            } else {
+                startActivity(new Intent(ParentActiveDashboard.this, ChildHistory.class));
+            }
         });
 
         navProfile.setOnClickListener(v -> {

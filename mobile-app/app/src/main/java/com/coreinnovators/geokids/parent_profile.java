@@ -122,17 +122,19 @@ public class parent_profile extends AppCompatActivity {
     private void setupBottomNavigationListeners() {
         // Home navigation
         navHome.setOnClickListener(v -> {
-            // Navigate to home or do nothing if already on home
-            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(parent_profile.this, ParentActiveDashboard.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
 
-        // Location navigation
+        // Location navigation → Track Location
         navLocation.setOnClickListener(v -> {
-            Intent intent = new Intent(parent_profile.this, ChildHistory.class);
+            Intent intent = new Intent(parent_profile.this, TrackLocation.class);
             startActivity(intent);
         });
 
-        // History navigation
+        // History navigation → Child Pickup/Dropoff History
         navQr.setOnClickListener(v -> {
             Intent intent = new Intent(parent_profile.this, ChildHistory.class);
             startActivity(intent);
@@ -141,7 +143,6 @@ public class parent_profile extends AppCompatActivity {
         // Profile navigation - Already on profile
         navProfile.setOnClickListener(v -> {
             // Already on profile page
-            Toast.makeText(this, "Already on Profile", Toast.LENGTH_SHORT).show();
         });
     }
 
