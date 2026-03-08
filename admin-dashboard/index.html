@@ -341,28 +341,9 @@
                     </div>
 
                     <div class="trips-list">
-                        <div class="trip-item">
-                            <div class="trip-info">
-                                <h4>Morning Pickup - Route A</h4>
-                                <p>Driver: Robert Brown</p>
-                                <p>Students: 8/12</p>
-                            </div>
-                            <div class="trip-status">
-                                <span class="status-badge in-progress">In Progress</span>
-                                <p class="trip-time">Started 25 min ago</p>
-                            </div>
-                        </div>
-
-                        <div class="trip-item">
-                            <div class="trip-info">
-                                <h4>Morning Pickup - Route B</h4>
-                                <p>Driver: James Wilson</p>
-                                <p>Students: 15/18</p>
-                            </div>
-                            <div class="trip-status">
-                                <span class="status-badge in-progress">In Progress</span>
-                                <p class="trip-time">Started 18 min ago</p>
-                            </div>
+                        <div style="text-align: center; padding: 2rem; color: #94A3B8;">
+                            <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
+                            Loading active trips...
                         </div>
                     </div>
                 </div>
@@ -423,34 +404,35 @@
 
                 <div class="content-section">
                     <div class="section-header">
-                        <h3>Monthly Overview</h3>
+                        <h3>Daily Analytics</h3>
                         <div class="date-filter">
-                            <input type="month" value="2025-01" class="date-input">
+                            <input type="month" value="2025-01" class="date-input" id="report-month-filter">
                         </div>
                     </div>
 
                     <div class="report-summary">
                         <div class="report-item">
-                            <i class="fas fa-calendar-check"></i>
+                            <i class="fas fa-bus"></i>
                             <div>
-                                <h4>Working Days</h4>
-                                <p>22 days</p>
+                                <h4>Total Rides</h4>
+                                <p id="report-total-rides">0 rides</p>
                             </div>
                         </div>
 
                         <div class="report-item">
                             <i class="fas fa-clock"></i>
                             <div>
-                                <h4>Average Trip Duration</h4>
-                                <p>45 minutes</p>
+                                <h4>Avg. Duration</h4>
+                                <p id="report-avg-duration">0 mins</p>
                             </div>
                         </div>
 
-                        <div class="report-item">
-                            <i class="fas fa-star"></i>
+                        <div class="report-item clickable-report" id="btn-show-pickups"
+                            style="cursor: pointer; transition: all 0.3s ease;">
+                            <i class="fas fa-user-check"></i>
                             <div>
-                                <h4>Average Rating</h4>
-                                <p>4.8 / 5.0</p>
+                                <h4>Student Pickups</h4>
+                                <p id="report-total-pickups">0 pickups</p>
                             </div>
                         </div>
                     </div>
@@ -471,6 +453,7 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/driver-management.js"></script>
     <script src="js/parent-management.js"></script>
+    <script src="js/trip-management.js"></script>
     <script src="js/application-review.js"></script>
     <script src="js/app.js"></script>
 </body>
