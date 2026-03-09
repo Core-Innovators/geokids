@@ -559,7 +559,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
             finish();
         });
         navLocation.setOnClickListener(v ->
-                startActivity(new Intent(this, driver_map.class)));
+                Toast.makeText(this, "Already on Available Pickups", Toast.LENGTH_SHORT).show());
         navQr.setOnClickListener(v ->
                 startActivity(new Intent(this, QR_scan.class)));
         navProfile.setOnClickListener(v ->

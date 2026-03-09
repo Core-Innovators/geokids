@@ -124,38 +124,26 @@ public class driver_profile extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnViewChildren.setOnClickListener(v -> {
-            showToast("Navigate to Available Children");
-            // TODO: Start new activity
-            // Intent intent = new Intent(ProfileActivity.this, ViewChildrenActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, available_pickup.class);
+            startActivity(intent);
         });
 
         btnUpdateProfile.setOnClickListener(v -> {
-            showToast("Navigate to Update Profile");
-            // TODO: Start new activity
-            // Intent intent = new Intent(ProfileActivity.this, UpdateProfileActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, DriverFormActivity.class);
+            startActivity(intent);
         });
 
         btnContactParent.setOnClickListener(v -> {
-            showToast("Navigate to Contact Parent");
-            // TODO: Start new activity
-            // Intent intent = new Intent(ProfileActivity.this, ContactParentActivity.class);
-            // startActivity(intent);
+            showToast("Open a child's profile to contact their parent");
         });
 
         btnViewRequests.setOnClickListener(v -> {
-            showToast("Navigate to View Requests");
-            // TODO: Start new activity
-            // Intent intent = new Intent(ProfileActivity.this, ViewRequestsActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, view_request.class);
+            startActivity(intent);
         });
 
         btnContactAdmin.setOnClickListener(v -> {
-            showToast("Navigate to Contact Admin");
-            // TODO: Start new activity
-            // Intent intent = new Intent(ProfileActivity.this, ContactAdminActivity.class);
-            // startActivity(intent);
+            showContactAdminDialog();
         });
 
         btnDeleteAccount.setOnClickListener(v -> {
@@ -185,29 +173,24 @@ public class driver_profile extends AppCompatActivity {
 
     private void setupBottomNavigation() {
         navHome.setOnClickListener(v -> {
-            showToast("Home");
-            // TODO: Navigate to Home
-            // Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, driver_active_dashboard.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
         });
 
         navLocation.setOnClickListener(v -> {
-            showToast("Location");
-            // TODO: Navigate to Location
-            // Intent intent = new Intent(ProfileActivity.this, LocationActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, available_pickup.class);
+            startActivity(intent);
         });
 
         navQr.setOnClickListener(v -> {
-            showToast("QR Code");
-            // TODO: Navigate to QR Scanner
-            // Intent intent = new Intent(ProfileActivity.this, QRScannerActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(driver_profile.this, QR_scan.class);
+            startActivity(intent);
         });
 
         navProfile.setOnClickListener(v -> {
             // Already on profile screen
-            showToast("Already on Profile");
         });
     }
 
@@ -237,11 +220,10 @@ public class driver_profile extends AppCompatActivity {
                         user.delete()
                                 .addOnSuccessListener(aVoid1 -> {
                                     showToast("Account deleted successfully");
-                                    // TODO: Navigate to login screen
-                                    // Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
-                                    // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    // startActivity(intent);
-                                    // finish();
+                                    Intent intent = new Intent(driver_profile.this, login.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                    finish();
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Failed to delete auth account: " + e.getMessage());
@@ -253,6 +235,26 @@ public class driver_profile extends AppCompatActivity {
                     Log.e(TAG, "Failed to delete database record: " + e.getMessage());
                     showToast("Failed to delete account data");
                 });
+    }
+
+    private void showContactAdminDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Contact Admin")
+                .setMessage("Would you like to call admin support?")
+                .setPositiveButton("Call", (dialog, which) -> {
+                    String adminPhoneNumber = "+94771234567";
+                    try {
+                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                        callIntent.setData(android.net.Uri.parse("tel:" + adminPhoneNumber));
+                        showToast("Calling Admin Support...");
+                        startActivity(callIntent);
+                    } catch (Exception e) {
+                        showToast("Unable to make call. Please try again.");
+                        e.printStackTrace();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showToast(String message) {

@@ -509,7 +509,7 @@ public class driver_active_dashboard extends AppCompatActivity {
                 Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show());
 
         navLocation.setOnClickListener(v ->
-                startActivity(new Intent(driver_active_dashboard.this, driver_map.class)));
+                startActivity(new Intent(driver_active_dashboard.this, available_pickup.class)));
 
         navQr.setOnClickListener(v ->
                 startActivity(new Intent(driver_active_dashboard.this, QR_scan.class)));
