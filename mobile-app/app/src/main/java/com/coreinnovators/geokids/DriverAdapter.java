@@ -16,9 +16,11 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class DriverAdapter extends RecyclerView.Adapter<DriverAdapter.DriverViewHolder> {
 
-    private Context context;
+    private final Context context;
     private List<Driver> driverList;
     private OnDriverClickListener listener;
     private int selectedPosition = -1;
@@ -41,13 +43,8 @@ public class DriverAdapter extends RecyclerView.Adapter<DriverAdapter.DriverView
     public void setSelectedPosition(int position) {
         int previousPosition = selectedPosition;
         selectedPosition = position;
-
-        if (previousPosition != -1) {
-            notifyItemChanged(previousPosition);
-        }
-        if (selectedPosition != -1) {
-            notifyItemChanged(selectedPosition);
-        }
+        if (previousPosition != -1) notifyItemChanged(previousPosition);
+        if (selectedPosition != -1) notifyItemChanged(selectedPosition);
     }
 
     public Driver getSelectedDriver() {
@@ -67,60 +64,117 @@ public class DriverAdapter extends RecyclerView.Adapter<DriverAdapter.DriverView
     @Override
     public void onBindViewHolder(@NonNull DriverViewHolder holder, int position) {
         Driver driver = driverList.get(position);
+        boolean isSelected = (position == selectedPosition);
 
-        // Set driver name
+        // ── Name ─────────────────────────────────────────────────────
         holder.driverName.setText(driver.getFullName());
 
-        // Set profile image
-        if (driver.getProfileImageUrl() != null && !driver.getProfileImageUrl().isEmpty()) {
+        // ── Profile image ─────────────────────────────────────────────
+        String profileUrl = driver.getProfileImageUrl();
+        if (profileUrl != null && !profileUrl.isEmpty()) {
             Glide.with(context)
-                    .load(driver.getProfileImageUrl())
-                    .circleCrop()
+                    .load(profileUrl)
                     .placeholder(R.drawable.ic_profile_placeholder)
+                    .circleCrop()
                     .into(holder.driverImage);
         } else {
             holder.driverImage.setImageResource(R.drawable.ic_profile_placeholder);
         }
 
-        // Set available seats (default 10 for now)
-        holder.availableSeats.setText("-10");
+        // ── Route label ───────────────────────────────────────────────
+        // Firestore driver document has:
+        //   address: "Hulandawa, Monaragala"  ← human readable start town
+        //   routeData.distance: "17.7 km"     ← route length
+        //   routeData.duration: "18 min"      ← travel time
+        // We show "Hulandawa · 17.7 km" which is accurate and scannable.
+        holder.routeInfo.setText(buildRouteLabel(driver));
 
-        // Set route information
-        if (driver.getRouteData() != null && driver.getRouteData().getStartPoint() != null) {
-            // For now, showing "passara to buttala" as placeholder
-            // You can customize this based on actual location data
-            holder.routeInfo.setText("- passara to buttala");
-        } else {
-            holder.routeInfo.setText("- Route not available");
-        }
+        // ── Selected state ────────────────────────────────────────────
+        applySelectionState(holder, isSelected);
 
-        // Highlight selected card
-        if (position == selectedPosition) {
-            holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.orange_primary));
-            holder.driverName.setTextColor(context.getResources().getColor(R.color.white));
-            holder.availableSeats.setTextColor(context.getResources().getColor(R.color.white));
-            holder.routeInfo.setTextColor(context.getResources().getColor(R.color.white));
-        } else {
-            holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.white));
-            holder.driverName.setTextColor(context.getResources().getColor(R.color.dark_blue));
-            holder.availableSeats.setTextColor(context.getResources().getColor(R.color.dark_blue));
-            holder.routeInfo.setTextColor(context.getResources().getColor(R.color.dark_blue));
-        }
-
-        // Click listener
+        // ── Click ─────────────────────────────────────────────────────
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                setSelectedPosition(position);
-                listener.onDriverClick(driver, position);
-            }
+            v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                    .withEndAction(() -> {
+                        float target = (position == selectedPosition) ? 1f : 1.02f;
+                        v.animate().scaleX(target).scaleY(target).setDuration(120).start();
+                    }).start();
+            setSelectedPosition(holder.getAdapterPosition());
+            if (listener != null) listener.onDriverClick(driver, holder.getAdapterPosition());
         });
 
-        // Arrow click listener for viewing profile
         holder.arrowIcon.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDriverClick(driver, position);
-            }
+            if (listener != null) listener.onDriverClick(driver, holder.getAdapterPosition());
         });
+    }
+
+    /**
+     * Builds route label from driver.address + routeData.distance.
+     *
+     * Driver Firestore structure:
+     *   address: "Hulandawa, Monaragala"
+     *   routeData: { distance: "17.7 km", duration: "18 min",
+     *                startPoint: {lat, lng}, endPoint: {lat, lng} }
+     *
+     * Result examples:
+     *   "Hulandawa · 17.7 km"
+     *   "Hulandawa · 18 min"
+     *   "Hulandawa"
+     *   "Route not set"
+     */
+    private String buildRouteLabel(Driver driver) {
+        String address = driver.getAddress(); // "Hulandawa, Monaragala"
+
+        // Start town: first segment before the comma
+        String startTown = null;
+        if (address != null && !address.isEmpty()) {
+            startTown = address.contains(",")
+                    ? address.split(",")[0].trim()
+                    : address.trim();
+        }
+
+        // Read distance and duration safely — Driver.RouteData is an inner class
+        // so we call getRouteData() and access fields via the standalone RouteData
+        // interface (both classes expose getDistance() and getDuration())
+        String distance = null;
+        String duration = null;
+        Driver.RouteData route = driver.getRouteData();
+        if (route != null) {
+            distance = route.getDistance();
+            duration = route.getDuration();
+        }
+
+        if (startTown != null) {
+            if (distance != null && !distance.isEmpty()) return startTown + " · " + distance;
+            if (duration != null && !duration.isEmpty()) return startTown + " · " + duration;
+            return startTown;
+        }
+        if (distance != null && !distance.isEmpty()) return distance + " route";
+        return "Route not set";
+    }
+
+    private void applySelectionState(DriverViewHolder holder, boolean isSelected) {
+        if (isSelected) {
+            holder.selectionAccent.setVisibility(View.VISIBLE);
+            holder.selectionAccent.setAlpha(0f);
+            holder.selectionAccent.animate().alpha(1f).setDuration(200).start();
+            holder.checkIcon.setVisibility(View.VISIBLE);
+            holder.arrowIcon.setVisibility(View.GONE);
+            holder.cardView.setCardElevation(dpToPx(holder, 8));
+            holder.itemView.setScaleX(1.02f);
+            holder.itemView.setScaleY(1.02f);
+        } else {
+            holder.selectionAccent.setVisibility(View.GONE);
+            holder.checkIcon.setVisibility(View.GONE);
+            holder.arrowIcon.setVisibility(View.VISIBLE);
+            holder.cardView.setCardElevation(dpToPx(holder, 3));
+            holder.itemView.setScaleX(1f);
+            holder.itemView.setScaleY(1f);
+        }
+    }
+
+    private float dpToPx(DriverViewHolder holder, int dp) {
+        return dp * holder.itemView.getContext().getResources().getDisplayMetrics().density;
     }
 
     @Override
@@ -130,20 +184,24 @@ public class DriverAdapter extends RecyclerView.Adapter<DriverAdapter.DriverView
 
     static class DriverViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
-        ImageView driverImage;
+        View selectionAccent;
+        CircleImageView driverImage;
+        View statusDot;
         TextView driverName;
-        TextView availableSeats;
         TextView routeInfo;
+        ImageView checkIcon;
         ImageView arrowIcon;
 
         public DriverViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardView = itemView.findViewById(R.id.driver_card);
-            driverImage = itemView.findViewById(R.id.driver_image);
-            driverName = itemView.findViewById(R.id.driver_name);
-            availableSeats = itemView.findViewById(R.id.available_seats);
-            routeInfo = itemView.findViewById(R.id.route_info);
-            arrowIcon = itemView.findViewById(R.id.arrow_icon);
+            cardView        = itemView.findViewById(R.id.driver_card);
+            selectionAccent = itemView.findViewById(R.id.selection_accent);
+            driverImage     = itemView.findViewById(R.id.driver_image);
+            statusDot       = itemView.findViewById(R.id.status_dot);
+            driverName      = itemView.findViewById(R.id.driver_name);
+            routeInfo       = itemView.findViewById(R.id.route_info);
+            checkIcon       = itemView.findViewById(R.id.check_icon);
+            arrowIcon       = itemView.findViewById(R.id.arrow_icon);
         }
     }
 }

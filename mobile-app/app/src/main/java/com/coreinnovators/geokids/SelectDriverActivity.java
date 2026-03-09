@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,6 +22,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SelectDriverActivity extends AppCompatActivity implements DriverAdapter.OnDriverClickListener {
 
@@ -29,9 +33,13 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
     // UI Components
     private TextView titleText;
     private Chip locationChip;
-    private ImageView filterIcon;
+    private LinearLayout filterIcon;
     private RecyclerView driversRecyclerView;
     private Button continueButton;
+    private LinearLayout selectedDriverPreview;
+    private CircleImageView selectedDriverAvatar;
+    private TextView selectedDriverName;
+    private TextView driverCountLabel;
 
     // Data
     private FirebaseFirestore firestore;
@@ -40,12 +48,6 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
     private String childId;
     private String parentId;
     private String childSchool;
-
-    // Filter variables
-    private String selectedVehicleType = "";
-    private String selectedAC = "";
-    private String selectedPickupLocation = "";
-    private String selectedDropoffLocation = "";
     private String selectedSchoolName = "";
 
     @Override
@@ -53,10 +55,8 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_driver);
 
-        // Initialize Firebase
         firestore = FirebaseFirestore.getInstance();
 
-        // Get intent data
         Intent intent = getIntent();
         childId = intent.getStringExtra("child_id");
         parentId = intent.getStringExtra("parent_id");
@@ -64,18 +64,10 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
 
         Log.d(TAG, "Child ID: " + childId);
         Log.d(TAG, "Parent ID: " + parentId);
-        Log.d(TAG, "Child School: " + childSchool);
 
-        // Initialize views
         initializeViews();
-
-        // Setup RecyclerView
         setupRecyclerView();
-
-        // Setup listeners
         setupListeners();
-
-        // Load drivers
         loadDrivers();
     }
 
@@ -85,8 +77,11 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
         filterIcon = findViewById(R.id.filter_icon);
         driversRecyclerView = findViewById(R.id.drivers_recycler_view);
         continueButton = findViewById(R.id.continue_button);
+        selectedDriverPreview = findViewById(R.id.selected_driver_preview);
+        selectedDriverAvatar = findViewById(R.id.selected_driver_avatar);
+        selectedDriverName = findViewById(R.id.selected_driver_name);
+        driverCountLabel = findViewById(R.id.driver_count_label);
 
-        // Set location chip if available
         if (childSchool != null && !childSchool.isEmpty()) {
             locationChip.setText(childSchool);
         }
@@ -100,29 +95,40 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
     }
 
     private void setupListeners() {
-        // Filter icon click
         filterIcon.setOnClickListener(v -> showFilterDialog());
 
-        // Location chip close icon click
         locationChip.setOnCloseIconClickListener(v -> {
             locationChip.setText("");
             selectedSchoolName = "";
             applyFilters();
         });
 
-        // Continue button click
         continueButton.setOnClickListener(v -> {
             Driver selectedDriver = driverAdapter.getSelectedDriver();
-            if (selectedDriver != null) {
-                // Navigate to driver profile or next screen
-                Intent intent = new Intent(SelectDriverActivity.this, view_driver_profile.class);
-                intent.putExtra("driver_id", selectedDriver.getDriverId());
-                intent.putExtra("child_id", childId);
-                intent.putExtra("parent_id", parentId);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "Please select a driver", Toast.LENGTH_SHORT).show();
+            if (selectedDriver == null) {
+                Toast.makeText(this, "Please select a driver first", Toast.LENGTH_SHORT).show();
+                driversRecyclerView.animate()
+                        .translationX(-12f).setDuration(60).withEndAction(() ->
+                                driversRecyclerView.animate()
+                                        .translationX(12f).setDuration(60).withEndAction(() ->
+                                                driversRecyclerView.animate()
+                                                        .translationX(0f).setDuration(60).start()
+                                        ).start()
+                        ).start();
+                return;
             }
+
+            v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80).withEndAction(() ->
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).withEndAction(() -> {
+                        Log.d(TAG, "Navigating to profile for: " + selectedDriver.getFullName());
+                        Intent intent = new Intent(SelectDriverActivity.this, view_driver_profile.class);
+                        intent.putExtra("driver_id", selectedDriver.getId());
+                        intent.putExtra("child_id", childId);
+                        intent.putExtra("parent_id", parentId);
+                        startActivity(intent);
+                        finish();
+                    }).start()
+            ).start();
         });
     }
 
@@ -134,12 +140,16 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
                     allDrivers.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Driver driver = document.toObject(Driver.class);
-                        driver.setId(document.getId());  // Set document ID as driver ID
+                        driver.setId(document.getId());
                         allDrivers.add(driver);
-                        Log.d(TAG, "Driver loaded: " + driver.getFullName());
+                        Log.d(TAG, "Loaded: " + driver.getFullName() + " | " + driver.getId());
+                    }
+                    Log.d(TAG, "Total: " + allDrivers.size());
+
+                    if (driverCountLabel != null) {
+                        driverCountLabel.setText(allDrivers.size() + " Available Drivers");
                     }
 
-                    Log.d(TAG, "Total drivers loaded: " + allDrivers.size());
                     applyFilters();
                 })
                 .addOnFailureListener(e -> {
@@ -153,24 +163,24 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
         View filterView = getLayoutInflater().inflate(R.layout.dialog_driver_filters, null);
         bottomSheetDialog.setContentView(filterView);
 
-        // Find filter views
-        ImageView closeButton = filterView.findViewById(R.id.close_button);
+        // ✅ Correct IDs matching dialog_driver_filters.xml
+        ImageView closeButton = filterView.findViewById(R.id.close_btn);
+        Button applyFiltersButton = filterView.findViewById(R.id.btnApplyFilters);
+        Button resetFiltersButton = filterView.findViewById(R.id.btnResetFilters);
 
-        // Vehicle Type Spinner
-        // AC/NON AC Spinner
-        // Pickup Location Spinner
-        // Dropoff Location Spinner
-        // School Name Spinner
-
-        Button applyFiltersButton = filterView.findViewById(R.id.apply_filters_button);
-
-        // Close button
         closeButton.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
-        // Apply filters button
+        resetFiltersButton.setOnClickListener(v -> {
+            // Clear chip selections
+            com.google.android.material.chip.ChipGroup vehicleGroup =
+                    filterView.findViewById(R.id.chipGroupVehicleType);
+            com.google.android.material.chip.ChipGroup acGroup =
+                    filterView.findViewById(R.id.chipGroupAC);
+            if (vehicleGroup != null) vehicleGroup.clearCheck();
+            if (acGroup != null) acGroup.clearCheck();
+        });
+
         applyFiltersButton.setOnClickListener(v -> {
-            // Get selected filter values from spinners
-            // For now, just apply filters and dismiss
             applyFilters();
             bottomSheetDialog.dismiss();
             Toast.makeText(this, "Filters applied", Toast.LENGTH_SHORT).show();
@@ -180,33 +190,39 @@ public class SelectDriverActivity extends AppCompatActivity implements DriverAda
     }
 
     private void applyFilters() {
-        List<Driver> filteredDrivers = new ArrayList<>();
-
-        for (Driver driver : allDrivers) {
-            boolean matches = true;
-
-            // Apply school filter if set
-            if (!selectedSchoolName.isEmpty()) {
-                // You can add school matching logic here
-                // For now, we'll keep all drivers
-            }
-
-            // Apply other filters as needed
-            // Vehicle type, AC, locations, etc.
-
-            if (matches) {
-                filteredDrivers.add(driver);
-            }
-        }
-
+        List<Driver> filteredDrivers = new ArrayList<>(allDrivers);
         Log.d(TAG, "Filtered drivers: " + filteredDrivers.size());
         driverAdapter.setDriverList(filteredDrivers);
     }
 
     @Override
     public void onDriverClick(Driver driver, int position) {
-        Log.d(TAG, "Driver clicked: " + driver.getFullName());
-        // Driver is already selected in the adapter
-        // You can add additional logic here if needed
+        Log.d(TAG, "Driver selected: " + driver.getFullName());
+
+        if (selectedDriverPreview != null) {
+            selectedDriverName.setText(driver.getFullName());
+
+            String imageUrl = driver.getProfileImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(this)
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .circleCrop()
+                        .into(selectedDriverAvatar);
+            }
+
+            if (selectedDriverPreview.getVisibility() == View.GONE) {
+                selectedDriverPreview.setVisibility(View.VISIBLE);
+                selectedDriverPreview.setAlpha(0f);
+                selectedDriverPreview.setTranslationY(20f);
+                selectedDriverPreview.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(250)
+                        .start();
+            }
+
+            continueButton.setText("Continue with " + driver.getFullName().split(" ")[0]);
+        }
     }
 }
