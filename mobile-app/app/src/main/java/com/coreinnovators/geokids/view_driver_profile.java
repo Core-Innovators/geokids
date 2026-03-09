@@ -3,10 +3,11 @@ package com.coreinnovators.geokids;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,7 +29,6 @@ public class view_driver_profile extends AppCompatActivity {
 
     private static final String TAG = "DriverProfileActivity";
 
-    // UI Components
     private CircleImageView profileImage;
     private TextView driverName;
     private TextView driverDescription;
@@ -38,85 +38,71 @@ public class view_driver_profile extends AppCompatActivity {
     private RecyclerView reviewsRecycler;
     private Button continueButton;
     private TextView noReviewsText;
+    private View loadingOverlay;
 
-    // Data
     private FirebaseFirestore firestore;
     private String driverId;
     private String childId;
     private String parentId;
     private Driver currentDriver;
     private ReviewAdapter reviewAdapter;
-    private List<String> vehicleImageUrls;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_driver_profile);
 
-        // Initialize Firebase
         firestore = FirebaseFirestore.getInstance();
 
-        // Get intent data
         Intent intent = getIntent();
         driverId = intent.getStringExtra("driver_id");
-        childId = intent.getStringExtra("child_id");
+        childId  = intent.getStringExtra("child_id");
         parentId = intent.getStringExtra("parent_id");
 
         Log.d(TAG, "Driver ID: " + driverId);
-        Log.d(TAG, "Child ID: " + childId);
+        Log.d(TAG, "Child ID: "  + childId);
         Log.d(TAG, "Parent ID: " + parentId);
 
-        // Initialize views
         initializeViews();
-
-        // Setup RecyclerViews
         setupRecyclerViews();
-
-        // Load driver data
         loadDriverData();
-
-        // Load reviews
         loadReviews();
-
-        // Setup listeners
         setupListeners();
     }
 
     private void initializeViews() {
-        profileImage = findViewById(R.id.profile_image);
-        driverName = findViewById(R.id.driver_name);
-        driverDescription = findViewById(R.id.driver_description);
-        driverAge = findViewById(R.id.driver_age);
-        vehicleNumber = findViewById(R.id.vehicle_number);
+        profileImage          = findViewById(R.id.profile_image);
+        driverName            = findViewById(R.id.driver_name);
+        driverDescription     = findViewById(R.id.driver_description);
+        driverAge             = findViewById(R.id.driver_age);
+        vehicleNumber         = findViewById(R.id.vehicle_number);
         vehicleImagesRecycler = findViewById(R.id.vehicle_images_recycler);
-        reviewsRecycler = findViewById(R.id.reviews_recycler);
-        continueButton = findViewById(R.id.continue_button);
-        noReviewsText = findViewById(R.id.no_reviews_text);
+        reviewsRecycler       = findViewById(R.id.reviews_recycler);
+        continueButton        = findViewById(R.id.continue_button);
+        noReviewsText         = findViewById(R.id.no_reviews_text);
+        loadingOverlay        = findViewById(R.id.loading_overlay);
     }
 
     private void setupRecyclerViews() {
-        // Reviews RecyclerView
         reviewAdapter = new ReviewAdapter();
         reviewsRecycler.setLayoutManager(new LinearLayoutManager(this));
         reviewsRecycler.setAdapter(reviewAdapter);
         reviewsRecycler.setNestedScrollingEnabled(true);
 
-        // Vehicle Images RecyclerView (horizontal)
         vehicleImagesRecycler.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        );
-        vehicleImageUrls = new ArrayList<>();
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
     }
 
     private void loadDriverData() {
-        firestore.collection("drivers")
-                .document(driverId)
+        showLoading(true);
+        firestore.collection("drivers").document(driverId)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        currentDriver = documentSnapshot.toObject(Driver.class);
+                .addOnSuccessListener(doc -> {
+                    showLoading(false);
+                    if (doc.exists()) {
+                        currentDriver = doc.toObject(Driver.class);
                         if (currentDriver != null) {
-                            currentDriver.setId(documentSnapshot.getId());
+                            currentDriver.setId(doc.getId());
                             updateUI();
                         }
                     } else {
@@ -125,57 +111,51 @@ public class view_driver_profile extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> {
+                    showLoading(false);
                     Log.e(TAG, "Error loading driver: " + e.getMessage(), e);
                     Toast.makeText(this, "Failed to load driver data", Toast.LENGTH_SHORT).show();
                     finish();
                 });
     }
 
+    private void showLoading(boolean show) {
+        if (loadingOverlay != null)
+            loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     private void updateUI() {
-        // Set driver name
         driverName.setText(currentDriver.getFullName());
+        driverName.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
 
-        // Set description
-        driverDescription.setText("Professional driver with " +
-                calculateExperience() + " years of experience");
+        driverDescription.setText("Professional driver with " + calculateExperience() + " years of experience");
 
-        // Set age
         int age = calculateAge(currentDriver.getBirthday());
         driverAge.setText("~" + age + " years old");
 
-        // Set vehicle number
         String vehicleNum = currentDriver.getVehicleNumber();
-        vehicleNumber.setText(vehicleNum != null ? "~" + vehicleNum : "~N/A");
+        vehicleNumber.setText(vehicleNum != null && !vehicleNum.isEmpty() ? "~" + vehicleNum : "~N/A");
 
-        // Load profile image
-        if (currentDriver.getProfileImageUrl() != null &&
-                !currentDriver.getProfileImageUrl().isEmpty()) {
+        String profileUrl = currentDriver.getProfileImageUrl();
+        if (profileUrl != null && !profileUrl.isEmpty()) {
             Glide.with(this)
-                    .load(currentDriver.getProfileImageUrl())
+                    .load(profileUrl)
                     .placeholder(R.drawable.ic_profile_placeholder)
+                    .circleCrop()
                     .into(profileImage);
         }
 
-        // Load vehicle images
         loadVehicleImages();
     }
 
     private void loadVehicleImages() {
-        // Collect all vehicle image URLs
-        vehicleImageUrls.clear();
-
-        if (currentDriver.getFrontLicenseUrl() != null &&
-                !currentDriver.getFrontLicenseUrl().isEmpty()) {
-            vehicleImageUrls.add(currentDriver.getFrontLicenseUrl());
+        List<String> vehicleImages = currentDriver.getVehicleImageUrls();
+        if (vehicleImages == null || vehicleImages.isEmpty()) {
+            vehicleImagesRecycler.setVisibility(View.GONE);
+        } else {
+            vehicleImagesRecycler.setVisibility(View.VISIBLE);
+            VehicleImageAdapter imageAdapter = new VehicleImageAdapter(this, vehicleImages);
+            vehicleImagesRecycler.setAdapter(imageAdapter);
         }
-        if (currentDriver.getBackLicenseUrl() != null &&
-                !currentDriver.getBackLicenseUrl().isEmpty()) {
-            vehicleImageUrls.add(currentDriver.getBackLicenseUrl());
-        }
-
-        // Set adapter
-        VehicleImageAdapter imageAdapter = new VehicleImageAdapter(this, vehicleImageUrls);
-        vehicleImagesRecycler.setAdapter(imageAdapter);
     }
 
     private void loadReviews() {
@@ -183,129 +163,109 @@ public class view_driver_profile extends AppCompatActivity {
                 .whereEqualTo("driverId", driverId)
                 .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addOnSuccessListener(snapshots -> {
                     List<Review> reviews = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Review review = document.toObject(Review.class);
-                        review.setReviewId(document.getId());
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        Review review = doc.toObject(Review.class);
+                        review.setReviewId(doc.getId());
                         reviews.add(review);
                     }
-
                     if (reviews.isEmpty()) {
-                        // Show "no reviews" message
                         reviewsRecycler.setVisibility(View.GONE);
                         noReviewsText.setVisibility(View.VISIBLE);
                     } else {
-                        // Show reviews
                         reviewsRecycler.setVisibility(View.VISIBLE);
                         noReviewsText.setVisibility(View.GONE);
                         reviewAdapter.setReviews(reviews);
                     }
-
-                    Log.d(TAG, "Loaded " + reviews.size() + " reviews");
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading reviews: " + e.getMessage(), e);
-                    Toast.makeText(this, "Failed to load reviews", Toast.LENGTH_SHORT).show();
-                    // Show no reviews on error
                     reviewsRecycler.setVisibility(View.GONE);
                     noReviewsText.setVisibility(View.VISIBLE);
                 });
     }
 
     private void setupListeners() {
-        continueButton.setOnClickListener(v -> assignDriverToChild());
+        continueButton.setOnClickListener(v ->
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).withEndAction(() ->
+                        v.animate().scaleX(1f).scaleY(1f).setDuration(100)
+                                .withEndAction(this::assignDriverAndNavigate).start()
+                ).start()
+        );
     }
 
-    private void assignDriverToChild() {
+    private void assignDriverAndNavigate() {
         if (childId == null || childId.isEmpty()) {
             Toast.makeText(this, "Child ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Create assignment data
-        Map<String, Object> assignmentData = new HashMap<>();
-        assignmentData.put("driverId", driverId);
-        assignmentData.put("driverName", currentDriver.getFullName());
-        assignmentData.put("assignedAt", FieldValue.serverTimestamp());
-        assignmentData.put("status", "assigned");
-
-        // Update child document with driver assignment
-        firestore.collection("children")
-                .document(childId)
-                .update("assignedDriver", assignmentData)
-                .addOnSuccessListener(aVoid -> {
-                    // Also update parent's document to track the assignment
-                    updateParentRecord();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error assigning driver: " + e.getMessage(), e);
-                    Toast.makeText(this, "Failed to assign driver", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void updateParentRecord() {
-        if (parentId == null || parentId.isEmpty()) {
-            // If no parent ID, just show success and finish
-            showSuccessAndNavigate();
+        if (currentDriver == null) {
+            Toast.makeText(this, "Driver data not loaded", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create assignment record in parent's document
-        Map<String, Object> assignmentInfo = new HashMap<>();
-        assignmentInfo.put("childId", childId);
-        assignmentInfo.put("driverId", driverId);
-        assignmentInfo.put("driverName", currentDriver.getFullName());
-        assignmentInfo.put("assignedAt", FieldValue.serverTimestamp());
+        showLoading(true);
+        continueButton.setEnabled(false);
 
-        firestore.collection("parents")
-                .document(parentId)
-                .update("driverAssignments", FieldValue.arrayUnion(assignmentInfo))
+        Map<String, Object> assignedDriverMap = new HashMap<>();
+        assignedDriverMap.put("driverId",    driverId);
+        assignedDriverMap.put("driverName",  currentDriver.getFullName());
+        assignedDriverMap.put("status",      "assigned");
+        assignedDriverMap.put("assignedAt",  FieldValue.serverTimestamp());
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("assignedDriver", assignedDriverMap);
+        childUpdates.put("updatedAt", System.currentTimeMillis());
+
+        firestore.collection("children").document(childId)
+                .update(childUpdates)
                 .addOnSuccessListener(aVoid -> {
-                    showSuccessAndNavigate();
+                    Log.d(TAG, "assignedDriver written to child: " + childId);
+                    showLoading(false);
+                    // ── Navigate directly to ParentPendingDashboard ──────────
+                    // Do NOT call updateParentRecord() first — the parents
+                    // collection uses auto-generated document IDs (via .add()),
+                    // NOT the Auth UID, so .document(parentId) would create a
+                    // wrong/empty doc and the update would silently fail, which
+                    // previously caused the activity stack to behave unexpectedly.
+                    navigateToPendingDashboard();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error updating parent record: " + e.getMessage(), e);
-                    // Still show success since child was updated
-                    showSuccessAndNavigate();
+                    showLoading(false);
+                    continueButton.setEnabled(true);
+                    Log.e(TAG, "Error assigning driver: " + e.getMessage(), e);
+                    Toast.makeText(this, "Failed to assign driver. Please try again.",
+                            Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void showSuccessAndNavigate() {
-        Toast.makeText(this, "Driver assigned successfully!", Toast.LENGTH_LONG).show();
-
-        // Navigate to active parent dashboard and clear all previous activities
-        Intent intent = new Intent(this, ParentActiveDashboard.class);
+    private void navigateToPendingDashboard() {
+        Toast.makeText(this, "Driver selected! Awaiting confirmation.", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(this, ParentPendingDashboard.class);
+        // Clear the entire back stack — user cannot go back to driver selection
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Pass necessary data to the dashboard
-        intent.putExtra("parent_id", parentId);
-        intent.putExtra("child_id", childId);
         startActivity(intent);
         finish();
     }
 
+    // ── Helpers ──────────────────────────────────────────────────────
     private int calculateAge(String birthday) {
-        if (birthday == null || birthday.isEmpty()) {
-            return 35; // Default age
-        }
-
+        if (birthday == null || birthday.isEmpty()) return 35;
         try {
-            // Assuming birthday format is "7/1/2026" or similar
             String[] parts = birthday.split("/");
             if (parts.length >= 3) {
-                int birthYear = Integer.parseInt(parts[2]);
-                int currentYear = 2026;
+                int birthYear  = Integer.parseInt(parts[2]);
+                int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
                 return currentYear - birthYear;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error calculating age: " + e.getMessage());
         }
-        return 35; // Default age
+        return 35;
     }
 
     private int calculateExperience() {
-        // You can add experience field to Driver model
-        // For now, returning a default value
         return 5;
     }
 }

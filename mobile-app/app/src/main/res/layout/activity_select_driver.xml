@@ -1,123 +1,335 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="#F7F8FC">
 
-    <!-- Header -->
-    <LinearLayout
-        android:id="@+id/header_layout"
+    <!-- Sticky Header -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:background="#F7F8FC"
+        app:elevation="0dp">
 
-        <TextView
-            android:id="@+id/title_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Select a driver for your child"
-            android:textColor="@color/dark_blue"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="12dp">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/location_chip"
+            <!-- Title Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Find a Driver"
+                        android:textColor="@color/dark_blue"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.02" />
+
+                    <TextView
+                        android:id="@+id/title_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select the best driver for your child"
+                        android:textColor="#7A8FA6"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+
+                </LinearLayout>
+
+                <!-- Filter button — pill shaped -->
+                <LinearLayout
+                    android:id="@+id/filter_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:background="@drawable/rounded_button_orange"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_filter"
+                        android:contentDescription="Filter"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="Filter"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Search bar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/search_bar_background"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_search"
+                    android:contentDescription="Search"
+                    app:tint="#7A8FA6" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Search drivers..."
+                    android:textColor="#AAB8C6"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <!-- Filter chip row -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Active location chip -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/location_chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="Buttala"
+                        android:textColor="@color/orange_primary"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="#FFF0EA"
+                        app:chipStrokeColor="@color/orange_primary"
+                        app:chipStrokeWidth="1dp"
+                        app:closeIconEnabled="true"
+                        app:closeIconTint="@color/orange_primary"
+                        app:chipIconTint="@color/orange_primary" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
+                        android:text="AC Vehicle"
+                        android:textColor="#7A8FA6"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/white"
+                        app:chipStrokeColor="#D8E0EA"
+                        app:chipStrokeWidth="1dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
+                        android:text="Top Rated"
+                        android:textColor="#7A8FA6"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/white"
+                        app:chipStrokeColor="#D8E0EA"
+                        app:chipStrokeWidth="1dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
+                        android:text="Nearby"
+                        android:textColor="#7A8FA6"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/white"
+                        app:chipStrokeColor="#D8E0EA"
+                        app:chipStrokeWidth="1dp" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <!-- Driver count label -->
+            <TextView
+                android:id="@+id/driver_count_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Buttala"
+                android:layout_marginTop="14dp"
+                android:text="Available Drivers"
                 android:textColor="@color/dark_blue"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/dark_blue"
-                app:chipStrokeWidth="1dp"
-                app:closeIconEnabled="true"
-                app:closeIconTint="@color/dark_blue" />
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/filter_icon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_filter"
-                android:contentDescription="Filter" />
+        </LinearLayout>
 
-        </RelativeLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    </LinearLayout>
-
-    <!-- Drivers List -->
+    <!-- Driver List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drivers_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/continue_button"
-        android:layout_below="@+id/header_layout"
         android:clipToPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingBottom="16dp" />
+        android:paddingTop="8dp"
+        android:paddingBottom="160dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Continue Button -->
-    <Button
-        android:id="@+id/continue_button"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="80dp"
-        android:background="@drawable/rounded_button_orange"
-        android:text="Continue"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <!-- Bottom Navigation -->
+    <!-- Bottom sheet: selected driver + continue -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/orange_primary"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:weightSum="4">
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bottom_sheet_white"
+        android:elevation="16dp"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="0dp">
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:src="@drawable/home"
-            android:contentDescription="Home" />
+        <!-- Selected driver preview (hidden until selection) -->
+        <LinearLayout
+            android:id="@+id/selected_driver_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/chip_background_light"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:visibility="gone">
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:src="@drawable/gps"
-            android:contentDescription="Location" />
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/selected_driver_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                app:civ_border_color="@color/orange_primary"
+                app:civ_border_width="2dp" />
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:src="@drawable/view"
-            android:contentDescription="History" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_weight="1"
-            android:src="@drawable/prop"
-            android:contentDescription="Profile" />
+                <TextView
+                    android:id="@+id/selected_driver_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Driver Name"
+                    android:textColor="@color/dark_blue"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selected ✓"
+                    android:textColor="@color/orange_primary"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_star_filled"
+                android:contentDescription="Selected"
+                app:tint="@color/orange_primary" />
+
+        </LinearLayout>
+
+        <!-- Continue button -->
+        <Button
+            android:id="@+id/continue_button"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_button_orange"
+            android:text="Continue with Selected Driver"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <!-- Bottom Navigation -->
+        <LinearLayout
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginStart="-20dp"
+            android:layout_marginEnd="-20dp"
+            android:background="@color/orange_primary"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="4">
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:src="@drawable/home"
+                android:contentDescription="Home" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:src="@drawable/gps"
+                android:contentDescription="Location" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:src="@drawable/view"
+                android:contentDescription="History" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:src="@drawable/prop"
+                android:contentDescription="Profile" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
