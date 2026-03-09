@@ -1,166 +1,283 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_dialog_background"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:scrollbars="none">
 
-    <!-- Header -->
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp">
+        android:background="@drawable/bottom_sheet_white"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
+        <!-- Drag Handle -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/drag_handle" />
+
+        <!-- Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Filter Drivers"
+                    android:textColor="@color/dark_blue"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Narrow down your options"
+                    android:textColor="@color/gray"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/close_btn"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/chip_bg_selector"
+                android:contentDescription="Close"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/dark_blue" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="#FFF0F0F0" />
+
+        <!-- Vehicle Type Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:text="Vehicle Filters"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="Vehicle Type"
             android:textColor="@color/dark_blue"
-            android:textSize="20sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/close_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:padding="6dp"
-            android:src="@drawable/close"
-            android:contentDescription="Close" />
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupVehicleType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="false">
 
-    </RelativeLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipCar"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Car"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <!-- Vehicle Type Filter -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Vehicle Type"
-        android:textColor="@color/dark_blue"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipVan"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Van"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <Spinner
-        android:id="@+id/vehicle_type_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/spinner_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipBus"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bus"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <!-- AC/NON AC Filter -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="AC/NON AC"
-        android:textColor="@color/dark_blue"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTuk"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tuk-Tuk"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <Spinner
-        android:id="@+id/ac_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/spinner_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+        </com.google.android.material.chip.ChipGroup>
 
-    <!-- Location Filters -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:text="Location Filters"
-        android:textColor="@color/dark_blue"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#FFF0F0F0" />
 
-    <!-- Pickup Location Filter -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Pick up Location"
-        android:textColor="@color/dark_blue"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        <!-- AC / Non-AC Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="Air Conditioning"
+            android:textColor="@color/dark_blue"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-    <Spinner
-        android:id="@+id/pickup_location_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/spinner_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupAC"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="false">
 
-    <!-- Dropoff Location Filter -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Drop off Location"
-        android:textColor="@color/dark_blue"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAC"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AC"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <Spinner
-        android:id="@+id/dropoff_location_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/spinner_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipNonAC"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Non-AC"
+                android:textColor="@drawable/chip_text_selector"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:checkedIconEnabled="false" />
 
-    <!-- School Filters -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:text="School Filters"
-        android:textColor="@color/dark_blue"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        </com.google.android.material.chip.ChipGroup>
 
-    <!-- School Name Filter -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="School Name"
-        android:textColor="@color/dark_blue"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#FFF0F0F0" />
 
-    <Spinner
-        android:id="@+id/school_name_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="24dp"
-        android:background="@drawable/spinner_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+        <!-- Location Spinner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/filter_input_background"
+            android:orientation="horizontal"
+            android:padding="12dp">
 
-    <!-- Apply Filters Button -->
-    <Button
-        android:id="@+id/apply_filters_button"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/rounded_button_orange"
-        android:text="Apply Filters"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="Location"
+                android:src="@android:drawable/ic_menu_mylocation"
+                app:tint="@color/orange_primary" />
 
-</LinearLayout>
+            <Spinner
+                android:id="@+id/spinnerLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                />
+        </LinearLayout>
+
+        <!-- School Spinner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/filter_input_background"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="School"
+                android:src="@android:drawable/ic_menu_myplaces"
+                app:tint="@color/orange_primary" />
+
+            <Spinner
+                android:id="@+id/spinnerSchool"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                />
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnResetFilters"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/white"
+                android:text="Reset"
+                android:textAllCaps="false"
+                android:textColor="@color/orange_primary"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="@color/orange_primary" />
+
+            <Button
+                android:id="@+id/btnApplyFilters"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/orange_primary"
+                android:text="Apply Filters"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
