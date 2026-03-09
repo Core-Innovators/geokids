@@ -5,6 +5,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,6 +24,7 @@ import androidx.cardview.widget.CardView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -57,7 +60,10 @@ public class view_request extends AppCompatActivity {
         String parentId;
         String parentName;
         String parentContact1;
+        String parentContact2;
         String pickupAddress; // fetched from parents collection
+        double pickupLat;
+        double pickupLng;
         String driverName;
     }
 
@@ -128,21 +134,41 @@ public class view_request extends AppCompatActivity {
                             item.driverName = (String) assignedDriver.get("driverName");
                         }
 
-                        // Fetch pickup address from parents collection
-                        if (item.parentId != null) {
-                            db.collection("parents").document(item.parentId)
+                        // Fetch pickup address and contact from parents collection using parentId field
+                        if (item.parentId != null && !item.parentId.isEmpty()) {
+                            db.collection("parents")
+                                    .whereEqualTo("parentId", item.parentId)
+                                    .limit(1)
                                     .get()
-                                    .addOnSuccessListener(parentDoc -> {
-                                        if (parentDoc.exists()) {
-                                            item.parentContact1  = parentDoc.getString("parentContact1");
-                                            item.pickupAddress   = parentDoc.getString("pickupAddress");
+                                    .addOnSuccessListener(parentQuery -> {
+                                        if (!parentQuery.isEmpty()) {
+                                            DocumentSnapshot parentDoc = parentQuery.getDocuments().get(0);
+                                            item.parentContact1 = parentDoc.getString("parentContact1");
+                                            item.parentContact2 = parentDoc.getString("parentContact2");
+                                            item.pickupAddress = parentDoc.getString("pickupAddress");
+
+                                            // Fetch coordinates for map clicking
+                                            Map<String, Object> coords = (Map<String, Object>) parentDoc.get("pickupCoordinates");
+                                            if (coords != null) {
+                                                Number lat = (Number) coords.get("latitude");
+                                                Number lng = (Number) coords.get("longitude");
+                                                if (lat != null && lng != null) {
+                                                    item.pickupLat = lat.doubleValue();
+                                                    item.pickupLng = lng.doubleValue();
+                                                }
+                                            }
+
+                                            // Fallback: If parentName is missing in child doc, get from parent doc
+                                            if (item.parentName == null || item.parentName.isEmpty()) {
+                                                item.parentName = parentDoc.getString("parentName");
+                                            }
                                         }
                                         requestList.add(item);
                                         pending[0]--;
                                         if (pending[0] == 0) onAllLoaded();
                                     })
                                     .addOnFailureListener(e -> {
-                                        Log.e(TAG, "Failed to fetch parent: " + e.getMessage());
+                                        Log.e(TAG, "Failed to fetch parent for parentId: " + item.parentId + " - " + e.getMessage());
                                         requestList.add(item); // add anyway with no pickup
                                         pending[0]--;
                                         if (pending[0] == 0) onAllLoaded();
@@ -292,8 +318,43 @@ public class view_request extends AppCompatActivity {
 
             h.childAge.setText(item.childAge != null ? item.childAge : "-");
             h.parentName.setText("Parent: " + (item.parentName != null ? item.parentName : "Unknown"));
-            h.parentContact.setText(item.parentContact1 != null ? item.parentContact1 : "No contact");
+
+            // Show both contacts if available
+            StringBuilder contactStr = new StringBuilder();
+            if (item.parentContact1 != null) contactStr.append(item.parentContact1);
+            if (item.parentContact2 != null && !item.parentContact2.isEmpty()) {
+                if (contactStr.length() > 0) contactStr.append(" / ");
+                contactStr.append(item.parentContact2);
+            }
+            h.parentContact.setText(contactStr.length() > 0 ? contactStr.toString() : "No contact");
+
+            // Click to call
+            h.parentContact.setOnClickListener(v -> {
+                String phone = (item.parentContact1 != null) ? item.parentContact1 : item.parentContact2;
+                if (phone != null && !phone.isEmpty()) {
+                    Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phone));
+                    ctx.startActivity(intent);
+                }
+            });
+
             h.pickupAddress.setText(item.pickupAddress != null ? item.pickupAddress : "Pickup not set");
+
+            // Click to open map
+            h.pickupAddress.setOnClickListener(v -> {
+                if (item.pickupLat != 0) {
+                    String uri = "geo:0,0?q=" + item.pickupLat + "," + item.pickupLng + "(" + Uri.encode(item.childName + "'s Pickup") + ")";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                    intent.setPackage("com.google.android.apps.maps");
+                    if (intent.resolveActivity(ctx.getPackageManager()) != null) {
+                        ctx.startActivity(intent);
+                    } else {
+                        ctx.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
+                    }
+                } else if (item.pickupAddress != null && !item.pickupAddress.equals("Pickup not set")) {
+                    String uri = "geo:0,0?q=" + Uri.encode(item.pickupAddress);
+                    ctx.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
+                }
+            });
 
             // Child profile image
             if (item.childProfileImageUrl != null && !item.childProfileImageUrl.isEmpty()) {

@@ -51,7 +51,31 @@ public class signup extends AppCompatActivity {
         // --- Validation ---
         if (TextUtils.isEmpty(username)) { usernameEt.setError("Username required"); return; }
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) { emailEt.setError("Valid email required"); return; }
-        if (TextUtils.isEmpty(password) || password.length() < 6) { passwordEt.setError("Password must be at least 6 characters"); return; }
+        // --- Password Complexity Check ---
+        boolean hasUppercase = false;
+        boolean hasLowercase = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+        String specialChars = "!@#$%^&*()_+-=[]{}|;':\",.<>?";
+
+        if (password.length() >= 8) {
+            for (char c : password.toCharArray()) {
+                if (Character.isUpperCase(c)) hasUppercase = true;
+                else if (Character.isLowerCase(c)) hasLowercase = true;
+                else if (Character.isDigit(c)) hasDigit = true;
+                else if (specialChars.contains(String.valueOf(c))) hasSpecial = true;
+            }
+        }
+
+        if (TextUtils.isEmpty(password) || password.length() < 8) {
+            passwordEt.setError("Password must be at least 8 characters");
+            return;
+        }
+        if (!hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
+            passwordEt.setError("Password must contain: uppercase, lowercase, number, and special character");
+            return;
+        }
+
         if (!password.equals(cpassword)) { cpasswordEt.setError("Passwords do not match"); return; }
 
         // --- Create user ---

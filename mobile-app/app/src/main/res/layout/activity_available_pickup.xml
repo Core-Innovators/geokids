@@ -314,7 +314,34 @@
 
             </LinearLayout>
 
-            <!-- Status badge -->
+            <!-- Contact row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/call"
+                    app:tint="#ED5316"
+                    android:contentDescription="Phone" />
+
+                <TextView
+                    android:id="@+id/detail_child_contact"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="No contact"
+                    android:textColor="#555555"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+             <!-- Status badge -->
             <TextView
                 android:id="@+id/detail_child_status"
                 android:layout_width="wrap_content"

@@ -51,7 +51,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
     private CardView childDetailCard;
     private ImageView detailChildAvatar, closeDetailCard, backButton;
     private TextView detailChildName, detailChildSchool, detailChildGrade,
-            detailChildAddress, detailChildStatus;
+            detailChildAddress, detailChildContact, detailChildStatus;
 
     // Bottom nav
     private LinearLayout navHome, navLocation, navQr, navProfile;
@@ -95,6 +95,7 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         detailChildSchool     = findViewById(R.id.detail_child_school);
         detailChildGrade      = findViewById(R.id.detail_child_grade);
         detailChildAddress    = findViewById(R.id.detail_child_address);
+        detailChildContact    = findViewById(R.id.detail_child_contact);
         detailChildStatus     = findViewById(R.id.detail_child_status);
         backButton            = findViewById(R.id.back_button);
 
@@ -252,6 +253,8 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
                                                 parentQuery.getDocuments().get(0);
                                         String addr = parentDoc.getString("pickupAddress");
                                         if (addr != null) child.pickupAddress = addr;
+                                        child.parentContact1 = parentDoc.getString("parentContact1");
+                                        child.parentContact2 = parentDoc.getString("parentContact2");
 
                                         Map<String, Object> coords =
                                                 (Map<String, Object>) parentDoc.get("pickupCoordinates");
@@ -481,6 +484,24 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         detailChildGrade.setText(child.childGrade   != null ? child.childGrade  : "");
         detailChildAddress.setText(child.pickupAddress != null
                 ? child.pickupAddress : "Address not available");
+
+        StringBuilder contact = new StringBuilder();
+        if (child.parentContact1 != null) contact.append(child.parentContact1);
+        if (child.parentContact2 != null) {
+            if (contact.length() > 0) contact.append(" / ");
+            contact.append(child.parentContact2);
+        }
+        detailChildContact.setText(contact.length() > 0 ? contact.toString() : "No contact");
+
+        // Click to call
+        detailChildContact.setOnClickListener(v -> {
+            String phone = (child.parentContact1 != null) ? child.parentContact1 : child.parentContact2;
+            if (phone != null && !phone.isEmpty()) {
+                Intent intent = new Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:" + phone));
+                startActivity(intent);
+            }
+        });
+
         detailChildStatus.setText("Pending Pickup");
 
         if (child.childProfileImageUrl != null && !child.childProfileImageUrl.isEmpty()) {
@@ -585,6 +606,8 @@ public class available_pickup extends AppCompatActivity implements OnMapReadyCal
         public String  parentName;
         public String  parentId;
         public String  pickupAddress;
+        public String  parentContact1;
+        public String  parentContact2;
         public String  lastAction;
         public double  pickupLat;
         public double  pickupLng;
